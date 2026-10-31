@@ -19,6 +19,19 @@ python -m streamlit run app.py
 
 Open **http://localhost:8501**, or double-click **run_app.bat** after installing dependencies. To isolate dependencies, create and activate a virtual environment first.
 
+## Deploy on Streamlit Community Cloud
+
+Sign in at [share.streamlit.io](https://share.streamlit.io/), connect GitHub and create an app with:
+
+| Setting | Value |
+| --- | --- |
+| Repository | `FarahSayari/pulmoTrack-farahsayari-contribution` |
+| Branch | `main` |
+| Main file | `app.py` |
+| Python version (Advanced settings) | `3.11` (the locally tested version) |
+
+The root `requirements.txt` installs the runtime dependencies. No secrets, dataset downloads or model execution are required. Keep the repository private if desired and grant Streamlit access to private repositories. App visibility is configured separately in Streamlit's sharing settings; a private repository produces a private app by default. See the official [deployment guide](https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app/deploy) and [sharing settings](https://docs.streamlit.io/deploy/streamlit-community-cloud/share-your-app).
+
 ## Workspace
 
 - **Overview:** a research showcase with paper-reported LUNA16 highlights, the three objectives, a CRISP-DM presentation of the workflow, personal contributions and Research Resources.
