@@ -362,8 +362,13 @@ def gradcam_panel():
 
 
 def detection():
-    title("DSO1 / Pulmonary nodule analysis", "Nodule detection",
-          "Identify likely pulmonary nodules among supplied LUNA16 candidates using a deep learning model that examines 3D CT patches. This study evaluates candidate screening, with separate validation and test results.")
+    introduction, visual = st.columns([0.85, 1.35], gap="large")
+    with introduction:
+        title("DSO1 / Pulmonary nodule analysis", "Nodule detection",
+              "Identify likely pulmonary nodules among supplied LUNA16 candidates using a deep learning model that examines 3D CT patches. This study evaluates candidate screening, with separate validation and test results.")
+    with visual:
+        st.image(str(ROOT / "assets/DSO1/Nodule detection.png"), width=1460)
+        st.caption("Nodule detection concept · illustrative markers and scores.")
     st.subheader("Model overview")
     cards = [
         ("Architecture", "3D U-Net encoder", "Double-convolution blocks with batch normalization and ReLU; 32 → 64 → 128 → 256 channels."),
@@ -379,7 +384,7 @@ def detection():
             '<span>Global average pooling</span><i>→</i><span>Two-class head</span></div>')
     st.caption("The encoder learns volumetric features; a linear head produces class logits, with softmax scores used for ROC evaluation. It has no segmentation decoder or bounding-box output. Segmentation is a separate research challenge.")
     source(dict(notebook="11_nodule_detection.ipynb", cell=5))
-    results_tab, training_tab, cam_tab, prep_tab = st.tabs(["Results", "Training history", "Prediction example & Grad-CAM", "Preparation & scope"])
+    results_tab, training_tab, cam_tab, prep_tab = st.tabs(["Results", "Training history", "Grad-CAM & pilot studies", "Preparation & scope"])
     with results_tab:
         detection_results()
     with training_tab:
@@ -388,10 +393,6 @@ def detection():
         st.caption("Training: 6,451 patches · Validation: 1,843 · Test: 921. The best saved validation checkpoint corresponds to epoch 15; last-epoch values describe epoch 20.")
         training_panel([r for r in archive["training"] if r["model"] == "det_unet"], "detection")
     with cam_tab:
-        st.subheader("A preserved pilot prediction")
-        st.write("The main U-Net study retains aggregate evaluations, but no per-case prediction images or probability arrays. The earlier Simple 3D CNN pilot does preserve the CT slice and Grad-CAM prediction example below.")
-        show_figure(figures["pilot_cnn_24_01"], download=True)
-        st.caption("Original pilot notebook output. Its title records the predicted label; no ground-truth label or confidence score is displayed, so this example cannot establish whether the prediction was correct.")
         gradcam_panel()
     with prep_tab:
         st.subheader("From CT scans to candidate patches")

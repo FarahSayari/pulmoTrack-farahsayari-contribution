@@ -22,7 +22,7 @@ Open **http://localhost:8501**, or double-click **run_app.bat** after installing
 ## Workspace
 
 - **Overview:** a research showcase with paper-reported LUNA16 highlights, the three objectives, a CRISP-DM presentation of the workflow, personal contributions and Research Resources.
-- **DSO1 · Detection:** model architecture, best-checkpoint validation and test evaluations, error interpretation, training history and candidate preparation. A genuine pilot prediction, Grad-CAM animation and frame inspection are presented separately from the main study.
+- **DSO1 · Detection:** an illustrated introduction, model architecture, best-checkpoint validation and test evaluations, error interpretation, training history and candidate preparation. Pilot Grad-CAM animation and frame inspection are presented separately from the main study.
 - **DSO2 · Classification:** Improved 3D CNN, ResNet3D Lite and U-Net encoder classifier experiments, each with its own cohort and training history.
 - **DSO5 · Segmentation:** historical scores, saved prediction examples, training curves and research context.
 - **CT gallery:** filter original images by objective, study scope and content; download the original PNGs.
