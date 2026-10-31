@@ -1,4 +1,4 @@
-"""Detection charts preserve experimental evidence and its label orientation."""
+"""Binary charts preserve experimental evidence and its label orientation."""
 import base64
 import xml.etree.ElementTree as ET
 
@@ -8,8 +8,9 @@ from pulmotrack.archive import figure_path, load_archive
 from pulmotrack.detection import confusion_chart, outcome_summary, roc_display
 
 
-@pytest.mark.parametrize("cohort", ["det_test", "det_validation"])
-def test_detection_presentation_preserves_counts_and_original_roc(cohort):
+@pytest.mark.parametrize("cohort", ["det_test", "det_validation", "cls_cnn_test", "cls_cnn_validation",
+                                    "cls_resnet_validation", "cls_unet_validation"])
+def test_binary_presentation_preserves_counts_and_original_roc(cohort):
     archive = load_archive()
     record = next(item for item in archive["experiments"] if item["id"] == cohort)
     roc = next(item for item in archive["figures"] if item["id"] == record["roc_figure_id"])

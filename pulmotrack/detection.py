@@ -1,4 +1,4 @@
-"""Presentation of preserved detection evaluations; no model execution."""
+"""Shared presentation of preserved binary candidate evaluations; no model execution."""
 from __future__ import annotations
 
 import base64

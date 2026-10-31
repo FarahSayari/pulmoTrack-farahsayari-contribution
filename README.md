@@ -23,14 +23,14 @@ Open **http://localhost:8501**, or double-click **run_app.bat** after installing
 
 - **Overview:** a research showcase with paper-reported LUNA16 highlights, the three objectives, a CRISP-DM presentation of the workflow, personal contributions and Research Resources.
 - **DSO1 · Detection:** an illustrated introduction, model architecture, best-checkpoint validation and test evaluations, error interpretation, training history and candidate preparation. Pilot Grad-CAM animation and frame inspection are presented separately from the main study.
-- **DSO2 · Classification:** Improved 3D CNN, ResNet3D Lite and U-Net encoder classifier experiments, each with its own cohort and training history.
+- **DSO2 · Classification:** an illustrated introduction and model overview for Improved 3D CNN, ResNet3D Lite and U-Net encoder studies. Each model retains its own cohort, themed evaluation charts, error interpretation and training history.
 - **DSO5 · Segmentation:** historical scores, saved prediction examples, training curves and research context.
 - **CT gallery:** filter original images by objective, study scope and content; download the original PNGs.
 - **Models & sources:** ten documented model studies, selected source notebooks, provenance and CSV/JSON downloads. Four segmentation checkpoints are included; other studies are documented by their outputs.
 
 The interface retains the navy/teal radiology theme. Original notebook figures and the GIF are copied unchanged. Controls browse stored figures or GIF frames, not missing CT arrays.
 
-Detection confusion matrices are rendered from their original counts. A display-only SVG color transform adapts the original ROC PNGs to the theme without changing curve geometry; raw probability arrays were not preserved. Original figures remain available for download.
+Detection and classification confusion matrices are rendered from their original counts. A display-only SVG color transform adapts the original ROC PNGs to the theme without changing curve geometry; raw probability arrays were not preserved. Original figures remain available for download.
 
 The overview's 0.95 segmentation Dice, 92% sensitivity at 1.5 false positives per scan and 0.91 classification AUC are attributed to the **team project manuscript, pages 4–5**. They are separate from the notebook-derived evaluations below. The original [PulmoTrack paper](assets/paper/PulmoTrackPaper.pdf) is included unchanged, with an 11-page viewer and PDF download. It is presented as a project manuscript, without a claim of peer-reviewed publication. Generated overview illustrations are identified as concept imagery.
 

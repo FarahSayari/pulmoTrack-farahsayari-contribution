@@ -197,44 +197,22 @@ def overview():
 
 
 def binary_results(model_id, key):
+    st.subheader("Evaluation results")
+    detection_study = model_id == "det_unet"
+    if detection_study:
+        st.write("The best checkpoint is selected by validation loss, then evaluated on a separate test split. Choose a cohort to inspect its recorded results.")
+    else:
+        st.write("Review the selected model’s own evaluation cohort. The Improved 3D CNN includes both test and validation results; the other models retain validation evaluations.")
     available = [e for e in archive["experiments"] if e["model"] == model_id and e["tier"] == "main"]
     available.sort(key=lambda e: e["stage"] != "test")
     selected = st.radio("Evaluation cohort", [e["id"] for e in available], horizontal=True,
                         format_func=lambda value: experiments[value]["stage"].title() + " · best checkpoint", key=key + "_evaluation")
     record = experiments[selected]
-    cols = st.columns(3)
-    with cols[0]:
-        stat(record["stage"].title() + " accuracy", f'{record["metrics"]["accuracy"]:.2%}', "Calculated from the saved confusion matrix")
-    with cols[1]:
-        stat("ROC-AUC", f'{record["metrics"]["roc_auc"]:.4f}', "Recorded for the same checkpoint and cohort")
-    with cols[2]:
-        stat("Evaluated patches", f'{record["sample_count"]:,}', "False nodule / True nodule")
-    a, b = st.columns(2, gap="large")
-    with a:
-        st.subheader("Confusion matrix")
-        show_figure(figures[record["matrix_figure_id"]])
-    with b:
-        st.subheader("ROC curve")
-        show_figure(figures[record["roc_figure_id"]])
-    with st.expander("Evaluation context & source"):
-        st.write(record["note"])
-        st.write("Accuracy is arithmetic from the transcribed original matrix. ROC-AUC is read from its saved text output. No predictions are recomputed.")
-        if "last_epoch_accuracy" in record:
-            st.caption(f'Last-epoch validation accuracy: {record["last_epoch_accuracy"]:.2%}. This is separate from the best-checkpoint results above.')
-        source(record)
-    st.download_button("Download DSO results CSV", evidence_csv(archive, record["dso"]),
-                       file_name=record["dso"] + "_recorded_results.csv", mime="text/csv", key=key + "_csv")
-
-
-def detection_results():
-    st.subheader("Evaluation results")
-    st.write("The best checkpoint is selected by validation loss, then evaluated on a separate test split. Choose a cohort to inspect its recorded results.")
-    selected = st.radio("Evaluation cohort", ["det_test", "det_validation"], horizontal=True,
-                        format_func=lambda value: experiments[value]["stage"].title() + " · best checkpoint",
-                        key="detection_evaluation")
-    record = experiments[selected]
+    if model_id == "cls_resnet":
+        st.info("This saved ResNet evaluation contains 401 patches; the earlier split log lists 200 validation patches. Treat it as a separate historical cohort when reviewing the results.")
     outcome = outcome_summary(record["matrix"])
-    with st.container(key="detection_metrics"):
+    style_key = "detection" if detection_study else "classification"
+    with st.container(key=style_key + "_metrics"):
         for column, (label, value, detail) in zip(st.columns(3), [
             (record["stage"].title() + " accuracy", f'{record["metrics"]["accuracy"]:.2%}', "Correct predictions / evaluated patches"),
             ("ROC-AUC", f'{record["metrics"]["roc_auc"]:.4f}', "Recorded discrimination across thresholds"),
@@ -244,14 +222,14 @@ def detection_results():
                 stat(label, value, detail)
     matrix_column, roc_column = st.columns(2, gap="large")
     with matrix_column:
-        with st.container(border=True, key="detection_matrix"):
+        with st.container(border=True, key=style_key + "_matrix"):
             st.subheader("Confusion matrix")
             st.caption("Counts at the notebook’s argmax decision rule.")
-            st.plotly_chart(confusion_chart(record["matrix"]), use_container_width=True, key="detection_confusion")
+            st.plotly_chart(confusion_chart(record["matrix"]), use_container_width=True, key=key + "_confusion")
         source(figures[record["matrix_figure_id"]])
     with roc_column:
         roc = figures[record["roc_figure_id"]]
-        with st.container(border=True, key="detection_roc"):
+        with st.container(border=True, key=style_key + "_roc"):
             st.subheader("ROC curve")
             st.caption("Sensitivity versus false positive rate across thresholds.")
             st.image(roc_display(figure_path(roc).read_bytes(), roc["width"], roc["height"],
@@ -264,13 +242,22 @@ def detection_results():
         st.markdown(f'**{outcome["tp"]:,} of {outcome["tp"] + outcome["fn"]:,} nodule patches were identified** '
                     f'({outcome["sensitivity"]:.2%} sensitivity). Of all patches predicted as nodules, '
                     f'**{outcome["precision"]:.2%} were true nodules** (precision).')
-        st.write("The high ROC-AUC indicates strong separation between the two patch classes in this cohort. Accuracy includes the larger non-nodule class; sensitivity and the error counts provide complementary context.")
+        if detection_study:
+            st.write("The high ROC-AUC indicates strong separation between the two patch classes in this cohort. Accuracy includes the larger non-nodule class; sensitivity and the error counts provide complementary context.")
+        else:
+            negative_count = outcome["tn"] + outcome["fp"]
+            st.markdown(f'It correctly rejected **{outcome["tn"]:,} of {negative_count:,} non-nodule patches** '
+                        f'({outcome["tn"] / negative_count:.2%} specificity). ROC-AUC describes ranking across thresholds; '
+                        'the confusion matrix shows errors at the saved decision rule.')
     with errors:
         st.html(f'<div class="detection-errors"><div><strong>{outcome["fp"]:,} false positives</strong>'
                 '<p>Non-nodule patches predicted as nodules: extra candidates to review.</p></div>'
                 f'<div><strong>{outcome["fn"]:,} false negatives</strong>'
                 '<p>Nodule patches predicted as non-nodules: missed candidates in this cohort.</p></div></div>')
-    st.caption("These are candidate-level results, not full-scan sensitivity or false positives per scan. The notebook splits patches randomly; it does not establish a patient-disjoint evaluation or clinical performance.")
+    if detection_study:
+        st.caption("These are candidate-level results, not full-scan sensitivity or false positives per scan. The notebook splits patches randomly; it does not establish a patient-disjoint evaluation or clinical performance.")
+    else:
+        st.caption("These metrics evaluate true-nodule versus false-nodule classification, not benign/malignant status. Cohorts differ across models, so these results do not form a controlled model ranking.")
     with st.expander("Evaluation context & original figures"):
         st.write(record["note"])
         if "last_epoch_accuracy" in record:
@@ -282,9 +269,9 @@ def detection_results():
             original = figures[record[field]]
             with column:
                 st.download_button(label, figure_path(original).read_bytes(), file_name=original["file"],
-                                   mime="image/png", key="detection_original_" + field)
-    st.download_button("Download DSO results CSV", evidence_csv(archive, "dso1"),
-                       file_name="dso1_recorded_results.csv", mime="text/csv", key="detection_csv")
+                                   mime="image/png", key=key + "_original_" + field)
+    st.download_button("Download DSO results CSV", evidence_csv(archive, record["dso"]),
+                       file_name=record["dso"] + "_recorded_results.csv", mime="text/csv", key=key + "_csv")
 
 
 def training_panel(runs, key):
@@ -385,12 +372,9 @@ def detection():
             '<span>3D CT patch</span><i>→</i><span>Convolution &amp; pooling</span><i>→</i>'
             '<span>Global average pooling</span><i>→</i><span>Two-class head</span></div>')
     st.caption("The encoder learns volumetric features; a linear head produces class logits, with softmax scores used for ROC evaluation. It has no segmentation decoder or bounding-box output. Segmentation is a separate research challenge.")
-    st.caption("Architecture background: [3D U-Net · Çiçek et al., 2016](https://arxiv.org/abs/1606.06650). These design rationales do not establish a best architecture or optimal patch size; neither comparison was recorded.")
-    source(dict(notebook="11_nodule_detection.ipynb", cell=5))
-    source(dict(notebook="9_Detection_Dataset_Creation (2).ipynb", cell=8))
     results_tab, training_tab, cam_tab, prep_tab = st.tabs(["Results", "Training history", "Grad-CAM & pilot studies", "Preparation & scope"])
     with results_tab:
-        detection_results()
+        binary_results("det_unet", "detection")
     with training_tab:
         st.subheader("Learning from 3D candidate patches")
         st.write("Weighted focal loss (γ = 2) addresses the unequal class frequencies. The run uses Adam at a learning rate of 0.0001, batch size 16, and 20 recorded epochs; checkpoints are selected by the lowest validation loss.")
@@ -407,14 +391,53 @@ def detection():
 
 
 def classification():
-    title("DSO2 / Main objective", "Nodule classification", "Compare the documented model approaches by exploring each recorded experiment and its own evaluation cohort.")
+    st.image(str(ROOT / "assets/DSO2/Nodule Classification.png"), width=1460)
+    st.caption("Classification concept · diagnostic label and confidence are illustrative.")
     st.info(dsos["dso2"]["scope"])
+    st.subheader("Model overview")
     options = [m["id"] for m in archive["models"] if m["dso"] == "dso2"]
     model = st.selectbox("Classification model", options, format_func=lambda value: models[value]["name"], key="classification_model")
+    architecture = {
+        "cls_cnn": (
+            "Improved 3D CNN",
+            "Three convolution blocks learn volumetric patterns with 32 → 64 → 128 channels. Adaptive pooling feeds a 256-unit dense layer, dropout and a two-class output.",
+            "This compact architecture provides a baseline for learning local CT features. Dropout regularizes its classification head.",
+            "3D convolution blocks", "Adaptive pooling & dense head"),
+        "cls_resnet": (
+            "ResNet3D Lite",
+            "A 16-channel stem feeds residual blocks with 32 → 64 → 128 channels. Global average pooling and a linear head produce two class scores.",
+            "Residual shortcuts combine each block’s transformed features with a shortcut path, allowing the model to retain earlier information as features deepen.",
+            "3D residual blocks", "Global average pooling"),
+        "cls_unet": (
+            "3D U-Net encoder",
+            "Four double-convolution stages use 32 → 64 → 128 → 256 channels, pooling and dropout. Global pooling feeds a 128-unit dense classifier and a two-class output.",
+            "The encoder captures CT features at several spatial scales. Its classification head replaces a segmentation decoder, adapting the architecture to patch labels.",
+            "Multiscale 3D encoder", "Global pooling & dense head"),
+    }[model]
+    heading, description, rationale, feature_stage, pooling_stage = architecture
+    cards = [
+        ("Architecture", heading, description, rationale),
+        ("Dataset", "LUNA16-derived patches",
+         "Recorded folder counts: 1,243 true-nodule and 761 false-nodule patches, totaling 2,004 examples (approximately 62% / 38%). This dataset is separate from DSO1.",
+         "The notebook retains this class mix rather than resampling to 50 / 50. The initial split log records 1,603 training, 200 validation and 201 test patches; each saved evaluation’s actual cohort is shown below."),
+        ("Input & output", "64 × 64 × 64 voxels",
+         "Each candidate-centered CT crop is normalized by its own mean and standard deviation. A fixed-size 3D patch retains nearby tissue context with a smaller input than a full scan.",
+         "One intensity channel enters the network. Two scores represent false nodule and true nodule; argmax gives the predicted label and softmax scores support ROC evaluation."),
+    ]
+    st.html('<div class="detection-model-grid">' + ''.join(
+        f'<div class="detection-model-card"><div class="eyebrow">{html.escape(label)}</div>'
+        f'<h3>{html.escape(card_heading)}</h3><p>{html.escape(copy)}</p><p>{html.escape(detail)}</p></div>'
+        for label, card_heading, copy, detail in cards) + '</div>')
+    st.html('<div class="detection-flow" aria-label="Classification architecture">'
+            '<span>Normalized 3D CT patch</span><i>→</i>'
+            f'<span>{html.escape(feature_stage)}</span><i>→</i><span>{html.escape(pooling_stage)}</span><i>→</i>'
+            '<span>True / false nodule</span></div>')
     results_tab, training_tab, scope_tab = st.tabs(["Results", "Training history", "Study context"])
     with results_tab:
         binary_results(model, "classification_" + model)
     with training_tab:
+        st.subheader("Learning to classify CT patches")
+        st.write("The selected model uses cross-entropy loss and Adam optimization at an initial learning rate of 0.0001. Training history and best-checkpoint evaluations are shown separately.")
         training_panel([r for r in archive["training"] if r["model"] == model], "classification_training")
     with scope_tab:
         st.write(models[model]["description"])

@@ -84,14 +84,14 @@ button[kind="primary"] { color: #0b2524 !important; font-weight: 650 !important;
 .detection-model-card p + p { margin-top: .9rem; padding-top: .9rem; border-top: 1px solid #29414d; }
 .detection-flow { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .7rem 1rem; padding: 1rem; margin: .4rem 0 0; border: 1px solid #25394a; border-radius: 10px; background: #101e2b; color: #c6d8e3; font-size: .8rem; }
 .detection-flow i { color: #63d9c1; font-style: normal; }
-.st-key-detection_metrics .stat { min-height: 124px; border-top: 2px solid #477f77; }
-.st-key-detection_metrics .stat-value { color: #75dfc8; font-size: 2.15rem; }
-.st-key-detection_roc [data-testid="stImage"] { height: 390px; display: flex; align-items: center; }
-.st-key-detection_roc [data-testid="stImage"] img { max-height: 390px; object-fit: contain; }
-.st-key-detection_roc, .st-key-detection_matrix { background: #111d2a; }
+.st-key-detection_metrics .stat, .st-key-classification_metrics .stat { min-height: 124px; border-top: 2px solid #477f77; }
+.st-key-detection_metrics .stat-value, .st-key-classification_metrics .stat-value { color: #75dfc8; font-size: 2.15rem; }
+.st-key-detection_roc [data-testid="stImage"], .st-key-classification_roc [data-testid="stImage"] { height: 390px; display: flex; align-items: center; }
+.st-key-detection_roc [data-testid="stImage"] img, .st-key-classification_roc [data-testid="stImage"] img { max-height: 390px; object-fit: contain; }
+.st-key-detection_roc, .st-key-detection_matrix, .st-key-classification_roc, .st-key-classification_matrix { background: #111d2a; }
 .detection-errors { border: 1px solid #29414e; border-radius: 12px; background: #12232f; padding: 1rem 1.2rem; }
 .detection-errors > div + div { border-top: 1px solid #2a3f4e; padding-top: .8rem; margin-top: .8rem; }
 .detection-errors strong { color: #b5e9dc; font-size: .95rem; }
 .detection-errors p { color: #a3b5c7; margin: .3rem 0 0; font-size: .86rem; line-height: 1.6; }
-@media(max-width: 768px) { .detection-model-grid { grid-template-columns: 1fr; } .detection-flow { justify-content: flex-start; gap: .6rem; } .st-key-detection_roc [data-testid="stImage"] { height: auto; } }
+@media(max-width: 768px) { .detection-model-grid { grid-template-columns: 1fr; } .detection-flow { justify-content: flex-start; gap: .6rem; } .st-key-detection_roc [data-testid="stImage"], .st-key-classification_roc [data-testid="stImage"] { height: auto; } }
 @media(max-width: 768px) { .block-container { padding: 4rem 1rem 1.5rem; } h1 { font-size: 2rem !important; } .topline { flex-wrap: wrap; } .hero-title { font-size: 2.8rem; } .stat { padding: .8rem; } .model-meta { flex-wrap: wrap; } }
