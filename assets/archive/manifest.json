@@ -1,12 +1,42 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "title": "pulmoTrack-farahsayari contribution",
+  "dsos": [
+    {
+      "id": "dso1",
+      "number": 1,
+      "name": "Nodule detection",
+      "role": "Main objective",
+      "description": "Screen provided nodule candidates using 3D CT patches.",
+      "scope": "The recorded model classifies supplied candidates as nodule or non-nodule; it is not a full-volume localization system."
+    },
+    {
+      "id": "dso2",
+      "number": 2,
+      "name": "Nodule classification",
+      "role": "Main objective",
+      "description": "Explore CNN, residual and U-Net encoders for candidate classification.",
+      "scope": "Recorded labels are true nodule and false nodule. Normal / benign / malignant classification is a project goal, not an evaluated outcome in these notebooks."
+    },
+    {
+      "id": "dso5",
+      "number": 5,
+      "name": "Exploratory segmentation",
+      "role": "Research challenge",
+      "description": "Study 3D segmentation architectures and the difficulty of small nodules.",
+      "scope": "An independent model-development exploration. The intended later pipeline uses the provided LUNA16 lung masks rather than learned nodule masks; this archive does not demonstrate that integration."
+    }
+  ],
   "mode": "saved_outputs_only",
   "models": [
     {
       "id": "unet",
       "name": "3D U-Net",
       "checkpoint": "best_unet3d_model.pth",
+      "dso": "dso5",
+      "tier": "main",
+      "input_size": 48,
+      "notebook": "02_Modeling_Segmentation.ipynb",
       "parameters": 1356641,
       "description": "The baseline encoder\u2013decoder with skip connections for 3D patch segmentation.",
       "size_bytes": 5458706,
@@ -16,6 +46,10 @@
       "id": "attention",
       "name": "Attention 3D U-Net",
       "checkpoint": "best_att_unet3d_model.pth",
+      "dso": "dso5",
+      "tier": "main",
+      "input_size": 48,
+      "notebook": "02_Modeling_Segmentation.ipynb",
       "parameters": 1362103,
       "description": "Attention gates weight the encoder features passed to the decoder.",
       "size_bytes": 5496242,
@@ -25,6 +59,10 @@
       "id": "residual",
       "name": "Residual Attention 3D U-Net",
       "checkpoint": "best_resattn_unet3d.pth",
+      "dso": "dso5",
+      "tier": "main",
+      "input_size": 48,
+      "notebook": "02_Modeling_Segmentation.ipynb",
       "parameters": 1382935,
       "description": "Residual convolution blocks combine with attention gates and skip connections.",
       "size_bytes": 5582690,
@@ -34,10 +72,98 @@
       "id": "tiny",
       "name": "U-Net \u00b7 tiny-nodule augmentation",
       "checkpoint": "best_unet3d_tiny_augmented.pth",
+      "dso": "dso5",
+      "tier": "main",
+      "input_size": 48,
+      "notebook": "02_Modeling_Segmentation.ipynb",
       "parameters": 1356641,
       "description": "The baseline architecture trained with tiny-nodule oversampling and augmentation.",
       "size_bytes": 5459554,
       "sha256": "bf4a82bc3f87ff80b43565dbd93c5ab15ac59e1904f46e5b18bd8a867394767a"
+    },
+    {
+      "id": "det_unet",
+      "name": "U-Net encoder classifier",
+      "dso": "dso1",
+      "tier": "main",
+      "notebook": "11_nodule_detection.ipynb",
+      "class_name": "UNet3DClassifier",
+      "description": "3D encoder with global pooling and a two-class head, trained with weighted focal loss.",
+      "input_size": 64,
+      "checkpoint": null,
+      "parameters": null,
+      "size_bytes": null,
+      "sha256": null
+    },
+    {
+      "id": "cls_cnn",
+      "name": "Improved 3D CNN",
+      "dso": "dso2",
+      "tier": "main",
+      "notebook": "11_nodule_classification.ipynb",
+      "class_name": "Improved3DCNN",
+      "description": "Three convolution blocks and a dense classification head with dropout.",
+      "input_size": 64,
+      "checkpoint": null,
+      "parameters": null,
+      "size_bytes": null,
+      "sha256": null
+    },
+    {
+      "id": "cls_resnet",
+      "name": "ResNet3D Lite",
+      "dso": "dso2",
+      "tier": "main",
+      "notebook": "11_nodule_classification.ipynb",
+      "class_name": "ResNet3DLite",
+      "description": "Residual 3D blocks followed by global average pooling and a two-class head.",
+      "input_size": 64,
+      "checkpoint": null,
+      "parameters": null,
+      "size_bytes": null,
+      "sha256": null
+    },
+    {
+      "id": "cls_unet",
+      "name": "U-Net encoder classifier",
+      "dso": "dso2",
+      "tier": "main",
+      "notebook": "11_nodule_classification.ipynb",
+      "class_name": "UNet3DClassifier",
+      "description": "A separate U-Net encoder study with dropout, pooling and a dense classification head.",
+      "input_size": 64,
+      "checkpoint": null,
+      "parameters": null,
+      "size_bytes": null,
+      "sha256": null
+    },
+    {
+      "id": "pilot_cnn",
+      "name": "Pilot \u00b7 Simple 3D CNN",
+      "dso": "dso1",
+      "tier": "pilot",
+      "notebook": "7_train_classifier.ipynb",
+      "class_name": "Simple3DCNN",
+      "description": "Earlier binary experiment on 196 patches. Includes a saved Grad-CAM illustration.",
+      "input_size": 64,
+      "checkpoint": null,
+      "parameters": null,
+      "size_bytes": null,
+      "sha256": null
+    },
+    {
+      "id": "pilot_resnet",
+      "name": "Pilot \u00b7 3D ResNet-18",
+      "dso": "dso1",
+      "tier": "pilot",
+      "notebook": "7b_train_classifier_resnet18.ipynb",
+      "class_name": "r3d_18",
+      "description": "Torchvision 3D ResNet-18 adapted to one input channel and two output classes.",
+      "input_size": 64,
+      "checkpoint": null,
+      "parameters": null,
+      "size_bytes": null,
+      "sha256": null
     }
   ],
   "experiments": [
@@ -46,6 +172,10 @@
       "model": "unet",
       "label": "Positive patches \u00b7 experiment A",
       "sample_count": 5,
+      "dso": "dso5",
+      "tier": "main",
+      "stage": "historical",
+      "accuracy_basis": "notebook output",
       "note": "Five randomly selected positive patches; not a documented held-out patient test.",
       "metrics": {
         "dice": 0.2115
@@ -58,6 +188,10 @@
       "model": "unet",
       "label": "Positive patches \u00b7 experiment B",
       "sample_count": 5,
+      "dso": "dso5",
+      "tier": "main",
+      "stage": "historical",
+      "accuracy_basis": "notebook output",
       "note": "A separate random sample of five positive patches; sample identities differ from experiment A.",
       "metrics": {
         "dice": 0.3127
@@ -70,6 +204,10 @@
       "model": "unet",
       "label": "Full positive-patch set",
       "sample_count": null,
+      "dso": "dso5",
+      "tier": "main",
+      "stage": "historical",
+      "accuracy_basis": "notebook output",
       "note": "Voxel-level precision, recall and F1 over the positive-patch folder; held-out status is not established.",
       "metrics": {
         "precision": 0.8778,
@@ -84,6 +222,10 @@
       "model": "unet",
       "label": "Mixed validation loader",
       "sample_count": 509,
+      "dso": "dso5",
+      "tier": "main",
+      "stage": "historical",
+      "accuracy_basis": "notebook output",
       "note": "Patch-level random validation split. Augmentation remains enabled; empty-mask matches receive Dice near 1 through smoothing.",
       "metrics": {
         "dice": 0.9504
@@ -96,6 +238,10 @@
       "model": "attention",
       "label": "Five positive patches",
       "sample_count": 5,
+      "dso": "dso5",
+      "tier": "main",
+      "stage": "historical",
+      "accuracy_basis": "notebook output",
       "note": "Random positive-patch sample; no common evaluation sample is established across models.",
       "metrics": {
         "dice": 0.1599,
@@ -111,6 +257,10 @@
       "model": "attention",
       "label": "Ten mixed patches",
       "sample_count": 10,
+      "dso": "dso5",
+      "tier": "main",
+      "stage": "historical",
+      "accuracy_basis": "notebook output",
       "note": "Random positives and negatives. Empty prediction/reference pairs are assigned 1 for Dice, precision, recall and F1.",
       "metrics": {
         "dice": 0.98,
@@ -127,6 +277,10 @@
       "model": "residual",
       "label": "Ten positive patches \u00b7 initial run",
       "sample_count": 10,
+      "dso": "dso5",
+      "tier": "main",
+      "stage": "historical",
+      "accuracy_basis": "notebook output",
       "note": "Historical evaluation before the shared checkpoint path was overwritten by a later training run.",
       "metrics": {
         "dice": 0.12,
@@ -143,6 +297,10 @@
       "model": "residual",
       "label": "Ten positive patches \u00b7 later run",
       "sample_count": 10,
+      "dso": "dso5",
+      "tier": "main",
+      "stage": "historical",
+      "accuracy_basis": "notebook output",
       "note": "Later historical evaluation. The preceding training cell creates an oversampled dataset but splits the earlier dataset variable.",
       "metrics": {
         "dice": 0.0348,
@@ -153,6 +311,224 @@
       },
       "notebook": "02_Modeling_Segmentation.ipynb",
       "cell": 40
+    },
+    {
+      "id": "det_validation",
+      "model": "det_unet",
+      "dso": "dso1",
+      "notebook": "11_nodule_detection.ipynb",
+      "cell": 7,
+      "stage": "validation",
+      "matrix": [
+        [
+          1608,
+          16
+        ],
+        [
+          14,
+          205
+        ]
+      ],
+      "matrix_figure": 2,
+      "roc_figure": 3,
+      "note": "Best validation checkpoint selected by loss. The printed 97.88% accuracy describes the last epoch, not this matrix.",
+      "tier": "main",
+      "label": "Best checkpoint \u00b7 validation",
+      "sample_count": 1843,
+      "metrics": {
+        "accuracy": 0.9837221920781335,
+        "roc_auc": 0.9928
+      },
+      "accuracy_basis": "Arithmetic from transcribed saved confusion matrix; no predictions recomputed",
+      "matrix_figure_id": "detection_07_02",
+      "matrix_figure_sha256": "457648858f89f1e8d9bd534251eb63709de4b62be202a5566b6417be8139b9d7",
+      "roc_figure_id": "detection_07_03",
+      "roc_figure_sha256": "1cf48285cbdc191f78081c2525fc906880b0e3995cd929a511dbbadd2f4589a0",
+      "last_epoch_accuracy": 0.9788
+    },
+    {
+      "id": "det_test",
+      "model": "det_unet",
+      "dso": "dso1",
+      "notebook": "11_nodule_detection.ipynb",
+      "cell": 8,
+      "stage": "test",
+      "matrix": [
+        [
+          789,
+          11
+        ],
+        [
+          9,
+          112
+        ]
+      ],
+      "matrix_figure": 1,
+      "roc_figure": 2,
+      "note": "Separate test evaluation after loading the stored best checkpoint; 921 candidate patches.",
+      "tier": "main",
+      "label": "Best checkpoint \u00b7 test",
+      "sample_count": 921,
+      "metrics": {
+        "accuracy": 0.9782844733984799,
+        "roc_auc": 0.9961
+      },
+      "accuracy_basis": "Arithmetic from transcribed saved confusion matrix; no predictions recomputed",
+      "matrix_figure_id": "detection_08_01",
+      "matrix_figure_sha256": "a6fd1e329b64654ed55a13d1515a51d81cc758d5e0e57009a1dc1119d2ac5b76",
+      "roc_figure_id": "detection_08_02",
+      "roc_figure_sha256": "16e2981b24e39947bec9d461ca36b74aad6e817496ff06489936e7d7dc281bac"
+    },
+    {
+      "id": "cls_cnn_validation",
+      "model": "cls_cnn",
+      "dso": "dso2",
+      "notebook": "11_nodule_classification.ipynb",
+      "cell": 10,
+      "stage": "validation",
+      "matrix": [
+        [
+          35,
+          35
+        ],
+        [
+          16,
+          114
+        ]
+      ],
+      "matrix_figure": 2,
+      "roc_figure": 3,
+      "note": "Best validation checkpoint. The printed 73.50% accuracy describes the last epoch.",
+      "tier": "main",
+      "label": "Best checkpoint \u00b7 validation",
+      "sample_count": 200,
+      "metrics": {
+        "accuracy": 0.745,
+        "roc_auc": 0.8269
+      },
+      "accuracy_basis": "Arithmetic from transcribed saved confusion matrix; no predictions recomputed",
+      "matrix_figure_id": "classification_10_02",
+      "matrix_figure_sha256": "fc80ee0b3096fe861489d6e039f7fd00ef6e85e9761d55a504dafbd04a6ddbdd",
+      "roc_figure_id": "classification_10_03",
+      "roc_figure_sha256": "d19c4b7056d700404988ad00a30271ab0606f8ad028e0a903d81c4fcaead5f1b",
+      "last_epoch_accuracy": 0.735
+    },
+    {
+      "id": "cls_cnn_test",
+      "model": "cls_cnn",
+      "dso": "dso2",
+      "notebook": "11_nodule_classification.ipynb",
+      "cell": 11,
+      "stage": "test",
+      "matrix": [
+        [
+          43,
+          35
+        ],
+        [
+          16,
+          107
+        ]
+      ],
+      "matrix_figure": 1,
+      "roc_figure": 2,
+      "note": "Separate 201-patch test evaluation of the best Improved 3D CNN checkpoint.",
+      "tier": "main",
+      "label": "Best checkpoint \u00b7 test",
+      "sample_count": 201,
+      "metrics": {
+        "accuracy": 0.746268656716418,
+        "roc_auc": 0.8335
+      },
+      "accuracy_basis": "Arithmetic from transcribed saved confusion matrix; no predictions recomputed",
+      "matrix_figure_id": "classification_11_01",
+      "matrix_figure_sha256": "5b4392ef20881b43eed0b4e407951312e2e8b7d86b3dc645bda04489e999d20e",
+      "roc_figure_id": "classification_11_02",
+      "roc_figure_sha256": "f45633fbbb6add03e220fc884d1d8385bbaedea85e9af1e7dac4f1b27d394950"
+    },
+    {
+      "id": "cls_resnet_validation",
+      "model": "cls_resnet",
+      "dso": "dso2",
+      "notebook": "11_nodule_classification.ipynb",
+      "cell": 15,
+      "stage": "validation",
+      "matrix": [
+        [
+          71,
+          76
+        ],
+        [
+          36,
+          218
+        ]
+      ],
+      "matrix_figure": 2,
+      "roc_figure": 3,
+      "note": "The saved matrix contains 401 patches, while the notebook's earlier split log says 200 validation patches. Treat this as its own historical run. The printed 65.84% is last-epoch accuracy.",
+      "tier": "main",
+      "label": "Best checkpoint \u00b7 validation",
+      "sample_count": 401,
+      "metrics": {
+        "accuracy": 0.7206982543640897,
+        "roc_auc": 0.7678
+      },
+      "accuracy_basis": "Arithmetic from transcribed saved confusion matrix; no predictions recomputed",
+      "matrix_figure_id": "classification_15_02",
+      "matrix_figure_sha256": "978d45717347fe2428a454ced469e6851758594f945612ca3b1cbf0088028a3e",
+      "roc_figure_id": "classification_15_03",
+      "roc_figure_sha256": "a4cea814c4327395fd5b307a821907bd4b87e0d77a9d6ce5985a686e63c597e8",
+      "last_epoch_accuracy": 0.6584
+    },
+    {
+      "id": "cls_unet_validation",
+      "model": "cls_unet",
+      "dso": "dso2",
+      "notebook": "11_nodule_classification.ipynb",
+      "cell": 20,
+      "stage": "validation",
+      "matrix": [
+        [
+          43,
+          27
+        ],
+        [
+          25,
+          105
+        ]
+      ],
+      "matrix_figure": 2,
+      "roc_figure": 3,
+      "note": "Best validation checkpoint on 200 patches. The printed 75.00% accuracy describes the last epoch.",
+      "tier": "main",
+      "label": "Best checkpoint \u00b7 validation",
+      "sample_count": 200,
+      "metrics": {
+        "accuracy": 0.74,
+        "roc_auc": 0.8116
+      },
+      "accuracy_basis": "Arithmetic from transcribed saved confusion matrix; no predictions recomputed",
+      "matrix_figure_id": "classification_20_02",
+      "matrix_figure_sha256": "8f4032d8ed37d76afedc7a78ee8574fd1d8a197c86044cb51fc8aac0f5b1baee",
+      "roc_figure_id": "classification_20_03",
+      "roc_figure_sha256": "92c89191fc2d30263c4912b0141899c6db6802ae949c1d0fbf877d076267ef9f",
+      "last_epoch_accuracy": 0.75
+    },
+    {
+      "id": "pilot_cnn_test",
+      "model": "pilot_cnn",
+      "dso": "dso1",
+      "tier": "pilot",
+      "stage": "test",
+      "label": "Pilot CNN \u00b7 test",
+      "sample_count": 30,
+      "metrics": {
+        "accuracy": 0.8333
+      },
+      "accuracy_basis": "Printed notebook test accuracy, rounded to four decimals",
+      "notebook": "7_train_classifier.ipynb",
+      "cell": 15,
+      "note": "Earlier 196-patch pilot. Test split: 30 patches; no ROC-AUC or confusion matrix was saved."
     }
   ],
   "training": [
@@ -412,6 +788,10 @@
           "validation_loss": 0.001
         }
       ],
+      "dso": "dso5",
+      "tier": "main",
+      "loss": "Binary cross-entropy",
+      "note": "Historical patch split; validation inherits augmentation.",
       "training_patches": 2036,
       "validation_patches": 509,
       "saved_epochs": [
@@ -713,6 +1093,10 @@
           "validation_loss": 0.001
         }
       ],
+      "dso": "dso5",
+      "tier": "main",
+      "loss": "Binary cross-entropy",
+      "note": "Historical patch split; validation inherits augmentation.",
       "training_patches": 2036,
       "validation_patches": 509,
       "saved_epochs": [
@@ -872,6 +1256,10 @@
           "validation_loss": 0.0009
         }
       ],
+      "dso": "dso5",
+      "tier": "main",
+      "loss": "Binary cross-entropy",
+      "note": "Historical patch split; validation inherits augmentation.",
       "training_patches": 2036,
       "validation_patches": 509,
       "saved_epochs": [
@@ -978,6 +1366,10 @@
           "validation_loss": 0.0012
         }
       ],
+      "dso": "dso5",
+      "tier": "main",
+      "loss": "Binary cross-entropy",
+      "note": "Historical patch split; validation inherits augmentation.",
       "training_patches": 2036,
       "validation_patches": 509,
       "saved_epochs": [
@@ -1048,6 +1440,10 @@
           "validation_loss": 0.0446
         }
       ],
+      "dso": "dso5",
+      "tier": "main",
+      "loss": "Binary cross-entropy",
+      "note": "Historical patch split; validation inherits augmentation.",
       "training_patches": 2140,
       "validation_patches": 536,
       "saved_epochs": [
@@ -1064,6 +1460,847 @@
       ],
       "notebook": "02_Modeling_Segmentation.ipynb",
       "cell": 44
+    },
+    {
+      "id": "det_training",
+      "model": "det_unet",
+      "dso": "dso1",
+      "notebook": "11_nodule_detection.ipynb",
+      "cell": 7,
+      "label": "U-Net candidate screening",
+      "tier": "main",
+      "loss": "Weighted focal loss",
+      "training_patches": 6451,
+      "validation_patches": 1843,
+      "note": "70% train / 20% validation / 10% test in the supplied code; the presentation describes a different split.",
+      "points": [
+        {
+          "epoch": 1,
+          "train_loss": 0.0404,
+          "validation_loss": 0.0354,
+          "train_accuracy": 0.597,
+          "validation_accuracy": 0.7206
+        },
+        {
+          "epoch": 2,
+          "train_loss": 0.0375,
+          "validation_loss": 0.0335,
+          "train_accuracy": 0.6175999999999999,
+          "validation_accuracy": 0.662
+        },
+        {
+          "epoch": 3,
+          "train_loss": 0.037,
+          "validation_loss": 0.0336,
+          "train_accuracy": 0.6246,
+          "validation_accuracy": 0.6581999999999999
+        },
+        {
+          "epoch": 4,
+          "train_loss": 0.0365,
+          "validation_loss": 0.0332,
+          "train_accuracy": 0.6267,
+          "validation_accuracy": 0.6262
+        },
+        {
+          "epoch": 5,
+          "train_loss": 0.0364,
+          "validation_loss": 0.0361,
+          "train_accuracy": 0.6487,
+          "validation_accuracy": 0.43189999999999995
+        },
+        {
+          "epoch": 6,
+          "train_loss": 0.0358,
+          "validation_loss": 0.0332,
+          "train_accuracy": 0.652,
+          "validation_accuracy": 0.6126
+        },
+        {
+          "epoch": 7,
+          "train_loss": 0.0354,
+          "validation_loss": 0.0324,
+          "train_accuracy": 0.6498,
+          "validation_accuracy": 0.7265
+        },
+        {
+          "epoch": 8,
+          "train_loss": 0.0349,
+          "validation_loss": 0.0318,
+          "train_accuracy": 0.6723,
+          "validation_accuracy": 0.7156999999999999
+        },
+        {
+          "epoch": 9,
+          "train_loss": 0.0295,
+          "validation_loss": 0.0185,
+          "train_accuracy": 0.7551000000000001,
+          "validation_accuracy": 0.8725
+        },
+        {
+          "epoch": 10,
+          "train_loss": 0.0154,
+          "validation_loss": 0.0172,
+          "train_accuracy": 0.9228000000000001,
+          "validation_accuracy": 0.8540000000000001
+        },
+        {
+          "epoch": 11,
+          "train_loss": 0.01,
+          "validation_loss": 0.0172,
+          "train_accuracy": 0.9568000000000001,
+          "validation_accuracy": 0.9669
+        },
+        {
+          "epoch": 12,
+          "train_loss": 0.0073,
+          "validation_loss": 0.0077,
+          "train_accuracy": 0.9654,
+          "validation_accuracy": 0.9544
+        },
+        {
+          "epoch": 13,
+          "train_loss": 0.0058,
+          "validation_loss": 0.0108,
+          "train_accuracy": 0.9729000000000001,
+          "validation_accuracy": 0.9647
+        },
+        {
+          "epoch": 14,
+          "train_loss": 0.0037,
+          "validation_loss": 0.0164,
+          "train_accuracy": 0.9819,
+          "validation_accuracy": 0.9778
+        },
+        {
+          "epoch": 15,
+          "train_loss": 0.0034,
+          "validation_loss": 0.0076,
+          "train_accuracy": 0.9833,
+          "validation_accuracy": 0.9837
+        },
+        {
+          "epoch": 16,
+          "train_loss": 0.0028,
+          "validation_loss": 0.0101,
+          "train_accuracy": 0.9856,
+          "validation_accuracy": 0.9815999999999999
+        },
+        {
+          "epoch": 17,
+          "train_loss": 0.0021,
+          "validation_loss": 0.0122,
+          "train_accuracy": 0.9887,
+          "validation_accuracy": 0.9826
+        },
+        {
+          "epoch": 18,
+          "train_loss": 0.0015,
+          "validation_loss": 0.0117,
+          "train_accuracy": 0.9932,
+          "validation_accuracy": 0.9778
+        },
+        {
+          "epoch": 19,
+          "train_loss": 0.0019,
+          "validation_loss": 0.0119,
+          "train_accuracy": 0.991,
+          "validation_accuracy": 0.9821
+        },
+        {
+          "epoch": 20,
+          "train_loss": 0.0014,
+          "validation_loss": 0.009,
+          "train_accuracy": 0.9929000000000001,
+          "validation_accuracy": 0.9788
+        }
+      ]
+    },
+    {
+      "id": "cls_cnn_training",
+      "model": "cls_cnn",
+      "dso": "dso2",
+      "notebook": "11_nodule_classification.ipynb",
+      "cell": 9,
+      "label": "Improved 3D CNN",
+      "tier": "main",
+      "loss": "Cross-entropy",
+      "training_patches": 1603,
+      "validation_patches": 200,
+      "note": "17 saved epochs; early stopping. Initial split log: 1,603 / 200 / 201.",
+      "points": [
+        {
+          "epoch": 1,
+          "train_loss": 0.6505,
+          "validation_loss": 0.6138,
+          "train_accuracy": 0.6157,
+          "validation_accuracy": 0.625
+        },
+        {
+          "epoch": 2,
+          "train_loss": 0.6243,
+          "validation_loss": 0.601,
+          "train_accuracy": 0.6487999999999999,
+          "validation_accuracy": 0.655
+        },
+        {
+          "epoch": 3,
+          "train_loss": 0.6048,
+          "validation_loss": 0.5853,
+          "train_accuracy": 0.6531999999999999,
+          "validation_accuracy": 0.735
+        },
+        {
+          "epoch": 4,
+          "train_loss": 0.5959,
+          "validation_loss": 0.5643,
+          "train_accuracy": 0.685,
+          "validation_accuracy": 0.685
+        },
+        {
+          "epoch": 5,
+          "train_loss": 0.5804,
+          "validation_loss": 0.5313,
+          "train_accuracy": 0.6949,
+          "validation_accuracy": 0.745
+        },
+        {
+          "epoch": 6,
+          "train_loss": 0.5567,
+          "validation_loss": 0.5286,
+          "train_accuracy": 0.7173999999999999,
+          "validation_accuracy": 0.735
+        },
+        {
+          "epoch": 7,
+          "train_loss": 0.556,
+          "validation_loss": 0.5469,
+          "train_accuracy": 0.7123999999999999,
+          "validation_accuracy": 0.71
+        },
+        {
+          "epoch": 8,
+          "train_loss": 0.548,
+          "validation_loss": 0.5664,
+          "train_accuracy": 0.7162000000000001,
+          "validation_accuracy": 0.69
+        },
+        {
+          "epoch": 9,
+          "train_loss": 0.5254,
+          "validation_loss": 0.5154,
+          "train_accuracy": 0.7392,
+          "validation_accuracy": 0.75
+        },
+        {
+          "epoch": 10,
+          "train_loss": 0.5066,
+          "validation_loss": 0.4982,
+          "train_accuracy": 0.7511,
+          "validation_accuracy": 0.755
+        },
+        {
+          "epoch": 11,
+          "train_loss": 0.5103,
+          "validation_loss": 0.582,
+          "train_accuracy": 0.7548,
+          "validation_accuracy": 0.685
+        },
+        {
+          "epoch": 12,
+          "train_loss": 0.4995,
+          "validation_loss": 0.488,
+          "train_accuracy": 0.7585999999999999,
+          "validation_accuracy": 0.745
+        },
+        {
+          "epoch": 13,
+          "train_loss": 0.485,
+          "validation_loss": 0.5086,
+          "train_accuracy": 0.7679,
+          "validation_accuracy": 0.74
+        },
+        {
+          "epoch": 14,
+          "train_loss": 0.4671,
+          "validation_loss": 0.591,
+          "train_accuracy": 0.7692,
+          "validation_accuracy": 0.675
+        },
+        {
+          "epoch": 15,
+          "train_loss": 0.4595,
+          "validation_loss": 0.4996,
+          "train_accuracy": 0.7867000000000001,
+          "validation_accuracy": 0.775
+        },
+        {
+          "epoch": 16,
+          "train_loss": 0.4541,
+          "validation_loss": 0.4958,
+          "train_accuracy": 0.7867000000000001,
+          "validation_accuracy": 0.745
+        },
+        {
+          "epoch": 17,
+          "train_loss": 0.4436,
+          "validation_loss": 0.6001,
+          "train_accuracy": 0.7909999999999999,
+          "validation_accuracy": 0.735
+        }
+      ]
+    },
+    {
+      "id": "cls_resnet_training",
+      "model": "cls_resnet",
+      "dso": "dso2",
+      "notebook": "11_nodule_classification.ipynb",
+      "cell": 14,
+      "label": "ResNet3D Lite",
+      "tier": "main",
+      "loss": "Cross-entropy",
+      "training_patches": null,
+      "validation_patches": 401,
+      "note": "Six saved epochs. Validation count comes from the saved matrix, not the earlier split configuration.",
+      "points": [
+        {
+          "epoch": 1,
+          "train_loss": 0.6571,
+          "validation_loss": 0.623,
+          "train_accuracy": 0.6175999999999999,
+          "validation_accuracy": 0.6584
+        },
+        {
+          "epoch": 2,
+          "train_loss": 0.6189,
+          "validation_loss": 0.6848,
+          "train_accuracy": 0.6487999999999999,
+          "validation_accuracy": 0.6484000000000001
+        },
+        {
+          "epoch": 3,
+          "train_loss": 0.5963,
+          "validation_loss": 0.571,
+          "train_accuracy": 0.6812,
+          "validation_accuracy": 0.7206999999999999
+        },
+        {
+          "epoch": 4,
+          "train_loss": 0.5862,
+          "validation_loss": 0.589,
+          "train_accuracy": 0.67,
+          "validation_accuracy": 0.6683
+        },
+        {
+          "epoch": 5,
+          "train_loss": 0.555,
+          "validation_loss": 0.6234,
+          "train_accuracy": 0.7099,
+          "validation_accuracy": 0.6808
+        },
+        {
+          "epoch": 6,
+          "train_loss": 0.5484,
+          "validation_loss": 0.6166,
+          "train_accuracy": 0.7118000000000001,
+          "validation_accuracy": 0.6584
+        }
+      ]
+    },
+    {
+      "id": "cls_unet_training",
+      "model": "cls_unet",
+      "dso": "dso2",
+      "notebook": "11_nodule_classification.ipynb",
+      "cell": 19,
+      "label": "U-Net encoder classifier",
+      "tier": "main",
+      "loss": "Cross-entropy",
+      "training_patches": 1603,
+      "validation_patches": 200,
+      "note": "30 saved epochs. The saved model is selected by validation loss.",
+      "points": [
+        {
+          "epoch": 1,
+          "train_loss": 0.7304,
+          "validation_loss": 0.642,
+          "train_accuracy": 0.5234000000000001,
+          "validation_accuracy": 0.66
+        },
+        {
+          "epoch": 2,
+          "train_loss": 0.6926,
+          "validation_loss": 0.667,
+          "train_accuracy": 0.5502,
+          "validation_accuracy": 0.54
+        },
+        {
+          "epoch": 3,
+          "train_loss": 0.6909,
+          "validation_loss": 0.663,
+          "train_accuracy": 0.5795,
+          "validation_accuracy": 0.57
+        },
+        {
+          "epoch": 4,
+          "train_loss": 0.6912,
+          "validation_loss": 0.6496,
+          "train_accuracy": 0.5820000000000001,
+          "validation_accuracy": 0.635
+        },
+        {
+          "epoch": 5,
+          "train_loss": 0.6764,
+          "validation_loss": 0.6513,
+          "train_accuracy": 0.5901,
+          "validation_accuracy": 0.68
+        },
+        {
+          "epoch": 6,
+          "train_loss": 0.6813,
+          "validation_loss": 0.6254,
+          "train_accuracy": 0.5939,
+          "validation_accuracy": 0.66
+        },
+        {
+          "epoch": 7,
+          "train_loss": 0.6539,
+          "validation_loss": 0.5894,
+          "train_accuracy": 0.6107,
+          "validation_accuracy": 0.7
+        },
+        {
+          "epoch": 8,
+          "train_loss": 0.6563,
+          "validation_loss": 0.6136,
+          "train_accuracy": 0.6288,
+          "validation_accuracy": 0.65
+        },
+        {
+          "epoch": 9,
+          "train_loss": 0.6578,
+          "validation_loss": 0.6277,
+          "train_accuracy": 0.6089,
+          "validation_accuracy": 0.645
+        },
+        {
+          "epoch": 10,
+          "train_loss": 0.6565,
+          "validation_loss": 0.6027,
+          "train_accuracy": 0.622,
+          "validation_accuracy": 0.625
+        },
+        {
+          "epoch": 11,
+          "train_loss": 0.6306,
+          "validation_loss": 0.6059,
+          "train_accuracy": 0.6307,
+          "validation_accuracy": 0.66
+        },
+        {
+          "epoch": 12,
+          "train_loss": 0.6315,
+          "validation_loss": 0.5653,
+          "train_accuracy": 0.6431999999999999,
+          "validation_accuracy": 0.7
+        },
+        {
+          "epoch": 13,
+          "train_loss": 0.6298,
+          "validation_loss": 0.5792,
+          "train_accuracy": 0.6481999999999999,
+          "validation_accuracy": 0.67
+        },
+        {
+          "epoch": 14,
+          "train_loss": 0.6184,
+          "validation_loss": 0.5758,
+          "train_accuracy": 0.6681,
+          "validation_accuracy": 0.725
+        },
+        {
+          "epoch": 15,
+          "train_loss": 0.6175,
+          "validation_loss": 0.5669,
+          "train_accuracy": 0.6475,
+          "validation_accuracy": 0.69
+        },
+        {
+          "epoch": 16,
+          "train_loss": 0.6128,
+          "validation_loss": 0.5527,
+          "train_accuracy": 0.64,
+          "validation_accuracy": 0.72
+        },
+        {
+          "epoch": 17,
+          "train_loss": 0.6028,
+          "validation_loss": 0.5638,
+          "train_accuracy": 0.6644,
+          "validation_accuracy": 0.69
+        },
+        {
+          "epoch": 18,
+          "train_loss": 0.5974,
+          "validation_loss": 0.5652,
+          "train_accuracy": 0.6694,
+          "validation_accuracy": 0.675
+        },
+        {
+          "epoch": 19,
+          "train_loss": 0.6002,
+          "validation_loss": 0.5404,
+          "train_accuracy": 0.6644,
+          "validation_accuracy": 0.695
+        },
+        {
+          "epoch": 20,
+          "train_loss": 0.6038,
+          "validation_loss": 0.5319,
+          "train_accuracy": 0.6712,
+          "validation_accuracy": 0.7
+        },
+        {
+          "epoch": 21,
+          "train_loss": 0.5851,
+          "validation_loss": 0.5365,
+          "train_accuracy": 0.6794,
+          "validation_accuracy": 0.735
+        },
+        {
+          "epoch": 22,
+          "train_loss": 0.5768,
+          "validation_loss": 0.537,
+          "train_accuracy": 0.6806,
+          "validation_accuracy": 0.705
+        },
+        {
+          "epoch": 23,
+          "train_loss": 0.5845,
+          "validation_loss": 0.5325,
+          "train_accuracy": 0.675,
+          "validation_accuracy": 0.695
+        },
+        {
+          "epoch": 24,
+          "train_loss": 0.5675,
+          "validation_loss": 0.5229,
+          "train_accuracy": 0.7018000000000001,
+          "validation_accuracy": 0.735
+        },
+        {
+          "epoch": 25,
+          "train_loss": 0.5626,
+          "validation_loss": 0.5113,
+          "train_accuracy": 0.6949,
+          "validation_accuracy": 0.74
+        },
+        {
+          "epoch": 26,
+          "train_loss": 0.5536,
+          "validation_loss": 0.5131,
+          "train_accuracy": 0.7087,
+          "validation_accuracy": 0.745
+        },
+        {
+          "epoch": 27,
+          "train_loss": 0.5564,
+          "validation_loss": 0.5068,
+          "train_accuracy": 0.6993,
+          "validation_accuracy": 0.74
+        },
+        {
+          "epoch": 28,
+          "train_loss": 0.5544,
+          "validation_loss": 0.5069,
+          "train_accuracy": 0.713,
+          "validation_accuracy": 0.735
+        },
+        {
+          "epoch": 29,
+          "train_loss": 0.544,
+          "validation_loss": 0.5074,
+          "train_accuracy": 0.7187,
+          "validation_accuracy": 0.745
+        },
+        {
+          "epoch": 30,
+          "train_loss": 0.5393,
+          "validation_loss": 0.5299,
+          "train_accuracy": 0.723,
+          "validation_accuracy": 0.75
+        }
+      ]
+    },
+    {
+      "id": "pilot_cnn_training",
+      "model": "pilot_cnn",
+      "dso": "dso1",
+      "notebook": "7_train_classifier.ipynb",
+      "cell": 13,
+      "label": "Pilot \u00b7 Simple 3D CNN",
+      "tier": "pilot",
+      "loss": "Cross-entropy",
+      "training_patches": 137,
+      "validation_patches": 29,
+      "note": "Small 196-patch pilot, with 30 test patches; not comparable to the larger candidate study.",
+      "points": [
+        {
+          "epoch": 1,
+          "train_loss": 0.0614,
+          "validation_loss": 0.0563,
+          "validation_accuracy": 1.0
+        },
+        {
+          "epoch": 2,
+          "train_loss": 0.0246,
+          "validation_loss": 0.1993,
+          "validation_accuracy": 0.931
+        },
+        {
+          "epoch": 3,
+          "train_loss": 0.0072,
+          "validation_loss": 0.0466,
+          "validation_accuracy": 1.0
+        },
+        {
+          "epoch": 4,
+          "train_loss": 0.0036,
+          "validation_loss": 0.0751,
+          "validation_accuracy": 0.931
+        },
+        {
+          "epoch": 5,
+          "train_loss": 0.0026,
+          "validation_loss": 0.0613,
+          "validation_accuracy": 0.9655
+        },
+        {
+          "epoch": 6,
+          "train_loss": 0.002,
+          "validation_loss": 0.0931,
+          "validation_accuracy": 0.931
+        },
+        {
+          "epoch": 7,
+          "train_loss": 0.0019,
+          "validation_loss": 0.0515,
+          "validation_accuracy": 0.9655
+        },
+        {
+          "epoch": 8,
+          "train_loss": 0.0016,
+          "validation_loss": 0.1054,
+          "validation_accuracy": 0.931
+        },
+        {
+          "epoch": 9,
+          "train_loss": 0.0013,
+          "validation_loss": 0.0975,
+          "validation_accuracy": 0.931
+        },
+        {
+          "epoch": 10,
+          "train_loss": 0.0011,
+          "validation_loss": 0.07,
+          "validation_accuracy": 0.9655
+        },
+        {
+          "epoch": 11,
+          "train_loss": 0.0011,
+          "validation_loss": 0.0645,
+          "validation_accuracy": 0.9655
+        },
+        {
+          "epoch": 12,
+          "train_loss": 0.0014,
+          "validation_loss": 0.1205,
+          "validation_accuracy": 0.931
+        },
+        {
+          "epoch": 13,
+          "train_loss": 0.0009,
+          "validation_loss": 0.098,
+          "validation_accuracy": 0.931
+        },
+        {
+          "epoch": 14,
+          "train_loss": 0.0007,
+          "validation_loss": 0.0983,
+          "validation_accuracy": 0.931
+        },
+        {
+          "epoch": 15,
+          "train_loss": 0.0006,
+          "validation_loss": 0.1112,
+          "validation_accuracy": 0.931
+        },
+        {
+          "epoch": 16,
+          "train_loss": 0.0005,
+          "validation_loss": 0.097,
+          "validation_accuracy": 0.931
+        },
+        {
+          "epoch": 17,
+          "train_loss": 0.0006,
+          "validation_loss": 0.0851,
+          "validation_accuracy": 0.9655
+        },
+        {
+          "epoch": 18,
+          "train_loss": 0.0005,
+          "validation_loss": 0.0727,
+          "validation_accuracy": 0.9655
+        },
+        {
+          "epoch": 19,
+          "train_loss": 0.0005,
+          "validation_loss": 0.1098,
+          "validation_accuracy": 0.931
+        },
+        {
+          "epoch": 20,
+          "train_loss": 0.0004,
+          "validation_loss": 0.0795,
+          "validation_accuracy": 0.9655
+        }
+      ]
+    },
+    {
+      "id": "pilot_resnet_training",
+      "model": "pilot_resnet",
+      "dso": "dso1",
+      "notebook": "7b_train_classifier_resnet18.ipynb",
+      "cell": 8,
+      "label": "Pilot \u00b7 3D ResNet-18",
+      "tier": "pilot",
+      "loss": "Cross-entropy",
+      "training_patches": 137,
+      "validation_patches": 29,
+      "note": "No saved test evaluation. Source contains a later edit/typo in the loss tracking expression and a Grad-CAM error; only the existing outputs are represented.",
+      "points": [
+        {
+          "epoch": 1,
+          "train_loss": 0.5515,
+          "validation_loss": 0.6107,
+          "validation_accuracy": 0.7241
+        },
+        {
+          "epoch": 2,
+          "train_loss": 0.4033,
+          "validation_loss": 0.5163,
+          "validation_accuracy": 0.7931
+        },
+        {
+          "epoch": 3,
+          "train_loss": 0.2381,
+          "validation_loss": 0.4874,
+          "validation_accuracy": 0.7241
+        },
+        {
+          "epoch": 4,
+          "train_loss": 0.1398,
+          "validation_loss": 1.0305,
+          "validation_accuracy": 0.3448
+        },
+        {
+          "epoch": 5,
+          "train_loss": 0.0696,
+          "validation_loss": 0.4785,
+          "validation_accuracy": 0.8276
+        },
+        {
+          "epoch": 6,
+          "train_loss": 0.0482,
+          "validation_loss": 0.6015,
+          "validation_accuracy": 0.8276
+        },
+        {
+          "epoch": 7,
+          "train_loss": 0.0499,
+          "validation_loss": 0.2369,
+          "validation_accuracy": 0.8966
+        },
+        {
+          "epoch": 8,
+          "train_loss": 0.0246,
+          "validation_loss": 0.2817,
+          "validation_accuracy": 0.8621
+        },
+        {
+          "epoch": 9,
+          "train_loss": 0.0291,
+          "validation_loss": 1.887,
+          "validation_accuracy": 0.5517
+        },
+        {
+          "epoch": 10,
+          "train_loss": 0.0537,
+          "validation_loss": 0.1159,
+          "validation_accuracy": 0.931
+        },
+        {
+          "epoch": 11,
+          "train_loss": 0.0896,
+          "validation_loss": 6.0629,
+          "validation_accuracy": 0.2414
+        },
+        {
+          "epoch": 12,
+          "train_loss": 0.1294,
+          "validation_loss": 0.1739,
+          "validation_accuracy": 0.931
+        },
+        {
+          "epoch": 13,
+          "train_loss": 0.129,
+          "validation_loss": 1.537,
+          "validation_accuracy": 0.5172
+        },
+        {
+          "epoch": 14,
+          "train_loss": 0.1258,
+          "validation_loss": 0.1199,
+          "validation_accuracy": 0.931
+        },
+        {
+          "epoch": 15,
+          "train_loss": 0.0425,
+          "validation_loss": 0.6026,
+          "validation_accuracy": 0.7586
+        },
+        {
+          "epoch": 16,
+          "train_loss": 0.053,
+          "validation_loss": 0.1107,
+          "validation_accuracy": 0.931
+        },
+        {
+          "epoch": 17,
+          "train_loss": 0.0298,
+          "validation_loss": 0.1859,
+          "validation_accuracy": 0.9655
+        },
+        {
+          "epoch": 18,
+          "train_loss": 0.0274,
+          "validation_loss": 0.0389,
+          "validation_accuracy": 0.9655
+        },
+        {
+          "epoch": 19,
+          "train_loss": 0.0217,
+          "validation_loss": 0.0576,
+          "validation_accuracy": 0.9655
+        },
+        {
+          "epoch": 20,
+          "train_loss": 0.0243,
+          "validation_loss": 0.2594,
+          "validation_accuracy": 0.8621
+        }
+      ]
     }
   ],
   "figures": [
@@ -1076,6 +2313,8 @@
       "width": 691,
       "height": 374,
       "sha256": "d47b6b5131b8a89b9996685f2fbcf46c8ff91d7e2e81a4a968b5335e3aec0c14",
+      "dso": "dso5",
+      "tier": "main",
       "group": "preparation_6",
       "model": null,
       "title": "Voxel spacing distribution",
@@ -1091,6 +2330,8 @@
       "width": 1972,
       "height": 796,
       "sha256": "0d95f2b26aaf89544c8495426fca14af2160b94210db34d1ef6a2d798827b78b",
+      "dso": "dso5",
+      "tier": "main",
       "group": "preparation_10",
       "model": null,
       "title": "Resampled CT and lung masks",
@@ -1106,6 +2347,8 @@
       "width": 1745,
       "height": 593,
       "sha256": "c3283fdc295d9fbca4cc18b010c4a3989ca7ec230599a29f05971d2466a605eb",
+      "dso": "dso5",
+      "tier": "main",
       "group": "preparation_14",
       "model": null,
       "title": "Lung region extraction",
@@ -1121,6 +2364,8 @@
       "width": 1763,
       "height": 593,
       "sha256": "65750b3fdad52adddfbf969d1fa07a34f2ed15af45d6934ed37b7d25a73fcad4",
+      "dso": "dso5",
+      "tier": "main",
       "group": "preparation_18",
       "model": null,
       "title": "Axial, coronal and sagittal CT views",
@@ -1136,6 +2381,8 @@
       "width": 715,
       "height": 525,
       "sha256": "5a94a6903b8a67ef29cf17335401b9c365f59484cdc05d1fd7e720ee9c7239e1",
+      "dso": "dso5",
+      "tier": "main",
       "group": "preparation_24",
       "model": null,
       "title": "Nodule center annotation",
@@ -1151,6 +2398,8 @@
       "width": 715,
       "height": 548,
       "sha256": "da0364d9384e136af0c6387fd65e8c38b93f7a0163522c0819182bdc15a323f2",
+      "dso": "dso5",
+      "tier": "main",
       "group": "preparation_26",
       "model": null,
       "title": "Nodule diameter annotation",
@@ -1166,6 +2415,8 @@
       "width": 1163,
       "height": 2790,
       "sha256": "e169cf7cbac82dc85ac55d2b0a6f072eebb62e4ac5adacee7729463438c37fcb",
+      "dso": "dso5",
+      "tier": "main",
       "group": "preparation_30",
       "model": null,
       "title": "CT, spherical reference mask and overlay",
@@ -1181,6 +2432,8 @@
       "width": 1090,
       "height": 350,
       "sha256": "973a4dd2375254b0d72312b8c7ece693399880281321aed264fc47ff3be0b5c4",
+      "dso": "dso5",
+      "tier": "main",
       "group": "preparation_34",
       "model": null,
       "title": "Positive CT patches",
@@ -1196,6 +2449,8 @@
       "width": 1103,
       "height": 350,
       "sha256": "76862d0b048b2c3956db87c10e9892b0b47abe129d8e6da3b4ff9c416ec10617",
+      "dso": "dso5",
+      "tier": "main",
       "group": "preparation_34",
       "model": null,
       "title": "Positive CT patches",
@@ -1211,6 +2466,8 @@
       "width": 1089,
       "height": 350,
       "sha256": "cd6fcd7be5ab0e521f9476293e704418cf8e936e0bf01035f26927b828a31dd8",
+      "dso": "dso5",
+      "tier": "main",
       "group": "preparation_34",
       "model": null,
       "title": "Positive CT patches",
@@ -1226,6 +2483,8 @@
       "width": 1089,
       "height": 350,
       "sha256": "f2c24cfa25508cff9a7339522a799fd5e4e60743191c51e9252c0e6f1382ecc1",
+      "dso": "dso5",
+      "tier": "main",
       "group": "preparation_34",
       "model": null,
       "title": "Positive CT patches",
@@ -1241,6 +2500,8 @@
       "width": 1103,
       "height": 350,
       "sha256": "be21976150466b7459823503d7f8970ea638beead25d3ab6e601da7b3e0dc980",
+      "dso": "dso5",
+      "tier": "main",
       "group": "preparation_34",
       "model": null,
       "title": "Positive CT patches",
@@ -1256,6 +2517,8 @@
       "width": 1490,
       "height": 418,
       "sha256": "94438d08c677943b27f888256c9235245244bcd860b5e1c0dd0726aa8d258e87",
+      "dso": "dso5",
+      "tier": "main",
       "group": "preparation_38",
       "model": null,
       "title": "Patch extraction inspection",
@@ -1271,6 +2534,8 @@
       "width": 1490,
       "height": 418,
       "sha256": "a2d2a9fdc9477088016a6ad2baf9409fb1ab415348f2a0d8bbfabb7c0b08ad74",
+      "dso": "dso5",
+      "tier": "main",
       "group": "preparation_38",
       "model": null,
       "title": "Patch extraction inspection",
@@ -1286,6 +2551,8 @@
       "width": 1490,
       "height": 418,
       "sha256": "d504e695cd279ffebde66b9e0a95139ee3dac1f1ca5ac5ddbb916030cefbf1c5",
+      "dso": "dso5",
+      "tier": "main",
       "group": "preparation_38",
       "model": null,
       "title": "Patch extraction inspection",
@@ -1301,6 +2568,8 @@
       "width": 1490,
       "height": 418,
       "sha256": "d9c8626b40693a262674400fb74130db932599bfd6f9a54da0918fe1b07ce065",
+      "dso": "dso5",
+      "tier": "main",
       "group": "preparation_38",
       "model": null,
       "title": "Patch extraction inspection",
@@ -1316,6 +2585,8 @@
       "width": 1089,
       "height": 495,
       "sha256": "0b8deddbc60090391e4fa34790a3a15a692ff0ae1ab6fb5e01e9d7eb85a08a79",
+      "dso": "dso5",
+      "tier": "main",
       "group": "preparation_41",
       "model": null,
       "title": "Reference-mask patch examples",
@@ -1331,6 +2602,8 @@
       "width": 1089,
       "height": 495,
       "sha256": "52db6eaa22accb9975aad93366283ce18acc0e989f3eddc00d88bcb09c8f2c7c",
+      "dso": "dso5",
+      "tier": "main",
       "group": "preparation_41",
       "model": null,
       "title": "Reference-mask patch examples",
@@ -1346,6 +2619,8 @@
       "width": 1089,
       "height": 495,
       "sha256": "3cb89ea37e5f2bf7f24e67f052be7d7ab0b6db8beb445a09c2461d8916284acc",
+      "dso": "dso5",
+      "tier": "main",
       "group": "preparation_41",
       "model": null,
       "title": "Reference-mask patch examples",
@@ -1361,6 +2636,8 @@
       "width": 1089,
       "height": 495,
       "sha256": "52db6eaa22accb9975aad93366283ce18acc0e989f3eddc00d88bcb09c8f2c7c",
+      "dso": "dso5",
+      "tier": "main",
       "group": "preparation_42",
       "model": null,
       "title": "Reference-mask patch examples \u00b7 repeat",
@@ -1376,6 +2653,8 @@
       "width": 1075,
       "height": 495,
       "sha256": "5324938597c7f71f7bdc880ecfbf567978d7dd0126bd6065ea40ff4e162ac190",
+      "dso": "dso5",
+      "tier": "main",
       "group": "preparation_42",
       "model": null,
       "title": "Reference-mask patch examples \u00b7 repeat",
@@ -1391,6 +2670,8 @@
       "width": 1089,
       "height": 495,
       "sha256": "0b8deddbc60090391e4fa34790a3a15a692ff0ae1ab6fb5e01e9d7eb85a08a79",
+      "dso": "dso5",
+      "tier": "main",
       "group": "preparation_42",
       "model": null,
       "title": "Reference-mask patch examples \u00b7 repeat",
@@ -1406,6 +2687,8 @@
       "width": 1456,
       "height": 887,
       "sha256": "b476a6c7b381b39bd84ad012f013de0f02bf7d5d98a52efb60d84fba1bc02400",
+      "dso": "dso5",
+      "tier": "main",
       "group": "preparation_46",
       "model": null,
       "title": "Negative CT patches",
@@ -1421,6 +2704,8 @@
       "width": 1456,
       "height": 887,
       "sha256": "cfc3daec103cc303a7b0e99a821e6e82ade83e0b067d2fa98efb17b315ff1b17",
+      "dso": "dso5",
+      "tier": "main",
       "group": "preparation_46",
       "model": null,
       "title": "Negative CT patches",
@@ -1436,6 +2721,8 @@
       "width": 1456,
       "height": 887,
       "sha256": "9fce2000e24de1c74fa397f02351981fbd9f5569f3afa9ba927fcd5f6f00e5f5",
+      "dso": "dso5",
+      "tier": "main",
       "group": "preparation_46",
       "model": null,
       "title": "Negative CT patches",
@@ -1451,6 +2738,8 @@
       "width": 1456,
       "height": 887,
       "sha256": "407d249e79015ff18bfaccbee589bce3cff260e34b6c24b3599942ce90cadf58",
+      "dso": "dso5",
+      "tier": "main",
       "group": "preparation_46",
       "model": null,
       "title": "Negative CT patches",
@@ -1466,6 +2755,8 @@
       "width": 1951,
       "height": 788,
       "sha256": "dea60a0ff67999d2bfae08da5c361e83075139f2c51ef90f17ad1b69d5bafcdc",
+      "dso": "dso5",
+      "tier": "main",
       "group": "preparation_51",
       "model": null,
       "title": "CT patch augmentation examples",
@@ -1481,6 +2772,8 @@
       "width": 1456,
       "height": 887,
       "sha256": "7de13068de1e35c4020b812dc63e311fe5f9dd30d57378affd407bd788b88461",
+      "dso": "dso5",
+      "tier": "main",
       "group": "unet_positive_a",
       "model": "unet",
       "title": "Positive patches \u00b7 experiment A",
@@ -1496,6 +2789,8 @@
       "width": 1456,
       "height": 887,
       "sha256": "1f18e3a2ed58a899e53536c9c66eb9b409e6d81a0f89fa290f60895e1691c6fb",
+      "dso": "dso5",
+      "tier": "main",
       "group": "unet_positive_a",
       "model": "unet",
       "title": "Positive patches \u00b7 experiment A",
@@ -1511,6 +2806,8 @@
       "width": 1456,
       "height": 887,
       "sha256": "13ff6862e5ee5729ee12710c39cb2d5f1588291e28e9357815b2b77194f4854d",
+      "dso": "dso5",
+      "tier": "main",
       "group": "unet_positive_a",
       "model": "unet",
       "title": "Positive patches \u00b7 experiment A",
@@ -1526,6 +2823,8 @@
       "width": 1456,
       "height": 887,
       "sha256": "6d9ed29043db872847e64062d53c0f6da05ff1d439805b1a34e2bdc9375bd40c",
+      "dso": "dso5",
+      "tier": "main",
       "group": "unet_positive_a",
       "model": "unet",
       "title": "Positive patches \u00b7 experiment A",
@@ -1541,6 +2840,8 @@
       "width": 1456,
       "height": 887,
       "sha256": "6cee152243b601280cf462aa2eab78c0b89b7ec8b851f039da8c5c8d22815635",
+      "dso": "dso5",
+      "tier": "main",
       "group": "unet_positive_a",
       "model": "unet",
       "title": "Positive patches \u00b7 experiment A",
@@ -1556,6 +2857,8 @@
       "width": 691,
       "height": 547,
       "sha256": "62d3474b8030fc9e1f4fa97ce278f0aa4bbcd12af1b65d29b9a16248058e5c4d",
+      "dso": "dso5",
+      "tier": "main",
       "group": "modeling_14",
       "model": null,
       "title": "U-Net training and validation loss",
@@ -1571,6 +2874,8 @@
       "width": 567,
       "height": 455,
       "sha256": "97a39bed85cb0bc96cd9f36e84e33dc8bb344a28eff9e91019aca15aa97d5c2f",
+      "dso": "dso5",
+      "tier": "main",
       "group": "modeling_17",
       "model": null,
       "title": "U-Net positive-sample Dice distribution",
@@ -1586,6 +2891,8 @@
       "width": 1456,
       "height": 887,
       "sha256": "0f53e00444d2a46b5f96b2ceafd383bdf31439fde8bc2ceaa5e4c7ce620720be",
+      "dso": "dso5",
+      "tier": "main",
       "group": "unet_positive_b",
       "model": "unet",
       "title": "Positive patches \u00b7 experiment B",
@@ -1601,6 +2908,8 @@
       "width": 1456,
       "height": 887,
       "sha256": "90d31a06140f0da940da1337715b745abceb09c052eeaca33a222a0b60c31f8e",
+      "dso": "dso5",
+      "tier": "main",
       "group": "unet_positive_b",
       "model": "unet",
       "title": "Positive patches \u00b7 experiment B",
@@ -1616,6 +2925,8 @@
       "width": 1456,
       "height": 887,
       "sha256": "56a250802c7a4d32073f04c2eb494b31779ad02d39be913fc2a3600717131b01",
+      "dso": "dso5",
+      "tier": "main",
       "group": "unet_positive_b",
       "model": "unet",
       "title": "Positive patches \u00b7 experiment B",
@@ -1631,6 +2942,8 @@
       "width": 1456,
       "height": 887,
       "sha256": "7cc3520d94e1dde38a3c4cdfcb5f04b8be8d58069fb9b75afdba93fb1e65b4b4",
+      "dso": "dso5",
+      "tier": "main",
       "group": "unet_positive_b",
       "model": "unet",
       "title": "Positive patches \u00b7 experiment B",
@@ -1646,6 +2959,8 @@
       "width": 1456,
       "height": 887,
       "sha256": "203d7065d5ee4a8847fde3349284252198231bff1802c1993b6ff78549b6cea6",
+      "dso": "dso5",
+      "tier": "main",
       "group": "unet_positive_b",
       "model": "unet",
       "title": "Positive patches \u00b7 experiment B",
@@ -1661,6 +2976,8 @@
       "width": 1448,
       "height": 887,
       "sha256": "71b2643393ee02054e93dc2d39951b51a3bf83b62b29f816fa993ed4333f1208",
+      "dso": "dso5",
+      "tier": "main",
       "group": "attention_positive",
       "model": "attention",
       "title": "Positive patches",
@@ -1676,6 +2993,8 @@
       "width": 1448,
       "height": 887,
       "sha256": "01eac62b7513614b31382cdc4f3e4926be590a62436f7aabf486c8ad8f148e68",
+      "dso": "dso5",
+      "tier": "main",
       "group": "attention_positive",
       "model": "attention",
       "title": "Positive patches",
@@ -1691,6 +3010,8 @@
       "width": 1448,
       "height": 887,
       "sha256": "4a29899e445cb982f3c5cd28508a6dfde1b7588fa48bf38349690279645cf16a",
+      "dso": "dso5",
+      "tier": "main",
       "group": "attention_positive",
       "model": "attention",
       "title": "Positive patches",
@@ -1706,6 +3027,8 @@
       "width": 1448,
       "height": 887,
       "sha256": "ac43c9339adf519cc55d5de8aff25cff2f19873d43a209d6cd109752dc68e3f6",
+      "dso": "dso5",
+      "tier": "main",
       "group": "attention_positive",
       "model": "attention",
       "title": "Positive patches",
@@ -1721,6 +3044,8 @@
       "width": 1448,
       "height": 887,
       "sha256": "ec955fdf1364a774649963208cefa8ed410db8dddbe699ddc93750de32ca7cf0",
+      "dso": "dso5",
+      "tier": "main",
       "group": "attention_positive",
       "model": "attention",
       "title": "Positive patches",
@@ -1736,6 +3061,8 @@
       "width": 1456,
       "height": 887,
       "sha256": "e0dd0cb18d8e2a8862ba776f0696433833122ddb5a99cd2dffb25fe7f325464c",
+      "dso": "dso5",
+      "tier": "main",
       "group": "attention_mixed",
       "model": "attention",
       "title": "Mixed positive / negative patches",
@@ -1751,6 +3078,8 @@
       "width": 1456,
       "height": 887,
       "sha256": "b42ff24c6af37400c4060a831fb62320b08978779397ca2efad7864b99d0a078",
+      "dso": "dso5",
+      "tier": "main",
       "group": "attention_mixed",
       "model": "attention",
       "title": "Mixed positive / negative patches",
@@ -1766,6 +3095,8 @@
       "width": 1456,
       "height": 887,
       "sha256": "2848338aafea671fc836c12a9b363726a0b7e3256c0e8c571ae6031d2b59a077",
+      "dso": "dso5",
+      "tier": "main",
       "group": "attention_mixed",
       "model": "attention",
       "title": "Mixed positive / negative patches",
@@ -1781,6 +3112,8 @@
       "width": 1456,
       "height": 887,
       "sha256": "38ea85ec791d90a49e527564ea17e388a7d750b652590e2c15bb6a0080c00618",
+      "dso": "dso5",
+      "tier": "main",
       "group": "attention_mixed",
       "model": "attention",
       "title": "Mixed positive / negative patches",
@@ -1796,6 +3129,8 @@
       "width": 1456,
       "height": 887,
       "sha256": "96b174512886b5ae857096abcea566b407b846786f77fd4e73edd471e575ebbe",
+      "dso": "dso5",
+      "tier": "main",
       "group": "attention_mixed",
       "model": "attention",
       "title": "Mixed positive / negative patches",
@@ -1811,6 +3146,8 @@
       "width": 1456,
       "height": 887,
       "sha256": "1198d2edd68727ba230b1ecd47dfca0783bf8fd323986d18b0d680bc031a5069",
+      "dso": "dso5",
+      "tier": "main",
       "group": "attention_mixed",
       "model": "attention",
       "title": "Mixed positive / negative patches",
@@ -1826,6 +3163,8 @@
       "width": 1456,
       "height": 887,
       "sha256": "ea5eaad112e7052049cec2a93a04254ad69e19e66820722c4207d90606279b68",
+      "dso": "dso5",
+      "tier": "main",
       "group": "attention_mixed",
       "model": "attention",
       "title": "Mixed positive / negative patches",
@@ -1841,6 +3180,8 @@
       "width": 1456,
       "height": 887,
       "sha256": "2dba2325795d0b9e43e0cf71a63ef7d2b29511ecdc2a5aca7dcb17c9454ad425",
+      "dso": "dso5",
+      "tier": "main",
       "group": "attention_mixed",
       "model": "attention",
       "title": "Mixed positive / negative patches",
@@ -1856,6 +3197,8 @@
       "width": 1456,
       "height": 887,
       "sha256": "da7a780a8ecaa80787be46e49480ea570e115675afe51b4b94b93492b40b6f9e",
+      "dso": "dso5",
+      "tier": "main",
       "group": "attention_mixed",
       "model": "attention",
       "title": "Mixed positive / negative patches",
@@ -1871,6 +3214,8 @@
       "width": 1456,
       "height": 887,
       "sha256": "f1efd2a0f468810ae26aab52614cb4d583bbcf57ad43bdfafad890ae200bad54",
+      "dso": "dso5",
+      "tier": "main",
       "group": "attention_mixed",
       "model": "attention",
       "title": "Mixed positive / negative patches",
@@ -1886,6 +3231,8 @@
       "width": 678,
       "height": 547,
       "sha256": "ffc5716efe7674fc7f3ea265833765772b80a3334669b381c75d852a0624baac",
+      "dso": "dso5",
+      "tier": "main",
       "group": "attention_mixed",
       "model": "attention",
       "title": "Mixed positive / negative patches",
@@ -1901,6 +3248,8 @@
       "width": 576,
       "height": 455,
       "sha256": "14dbf360a4b168fdc28f6bc2e7240c0ca0cdc7be5a6ba6b5067fdcc95726ce31",
+      "dso": "dso5",
+      "tier": "main",
       "group": "modeling_34",
       "model": null,
       "title": "Residual attention \u00b7 initial training loss",
@@ -1916,6 +3265,8 @@
       "width": 1456,
       "height": 887,
       "sha256": "2b4e20befe489663abbd142bc0c7b3df700358eb5bfa476421642e077408c7e2",
+      "dso": "dso5",
+      "tier": "main",
       "group": "residual_initial",
       "model": "residual",
       "title": "Positive patches \u00b7 initial run",
@@ -1931,6 +3282,8 @@
       "width": 1456,
       "height": 887,
       "sha256": "fab1c2a9a394060f82076ae1e077413fcb25411e5a95e139d8017b396123540a",
+      "dso": "dso5",
+      "tier": "main",
       "group": "residual_initial",
       "model": "residual",
       "title": "Positive patches \u00b7 initial run",
@@ -1946,6 +3299,8 @@
       "width": 1456,
       "height": 887,
       "sha256": "93652d9c6af076ce94ced79ad338e66b23411eb3252b88067acf6fde6226eb93",
+      "dso": "dso5",
+      "tier": "main",
       "group": "residual_initial",
       "model": "residual",
       "title": "Positive patches \u00b7 initial run",
@@ -1961,6 +3316,8 @@
       "width": 1456,
       "height": 887,
       "sha256": "8c63a3e72bf05b447da0109b62049ab447e81006be885097c936236d0ec18194",
+      "dso": "dso5",
+      "tier": "main",
       "group": "residual_initial",
       "model": "residual",
       "title": "Positive patches \u00b7 initial run",
@@ -1976,6 +3333,8 @@
       "width": 1456,
       "height": 887,
       "sha256": "1869bc10da8042ae8a08958e47514589e553bcb254647541db2125fd24d3f669",
+      "dso": "dso5",
+      "tier": "main",
       "group": "residual_initial",
       "model": "residual",
       "title": "Positive patches \u00b7 initial run",
@@ -1991,6 +3350,8 @@
       "width": 1456,
       "height": 887,
       "sha256": "57931cd3e18a2bde1d153ea7636252c6ee9cd751a5af188aecd6751f25a46861",
+      "dso": "dso5",
+      "tier": "main",
       "group": "residual_initial",
       "model": "residual",
       "title": "Positive patches \u00b7 initial run",
@@ -2006,6 +3367,8 @@
       "width": 1456,
       "height": 887,
       "sha256": "77fe3f8d642265b5441a54b7afc2b46ce81a5daba67fb76ac94631e858b8c126",
+      "dso": "dso5",
+      "tier": "main",
       "group": "residual_initial",
       "model": "residual",
       "title": "Positive patches \u00b7 initial run",
@@ -2021,6 +3384,8 @@
       "width": 1456,
       "height": 887,
       "sha256": "f3f52f9c7e193ff197d3c19666b65ec252e5260b0ad40d470c8cf0c974f5bb40",
+      "dso": "dso5",
+      "tier": "main",
       "group": "residual_initial",
       "model": "residual",
       "title": "Positive patches \u00b7 initial run",
@@ -2036,6 +3401,8 @@
       "width": 1456,
       "height": 887,
       "sha256": "e268a8428965b20455b44b43282c51556fda6694bc576cbc9b18327a0bdf4a26",
+      "dso": "dso5",
+      "tier": "main",
       "group": "residual_initial",
       "model": "residual",
       "title": "Positive patches \u00b7 initial run",
@@ -2051,6 +3418,8 @@
       "width": 1456,
       "height": 887,
       "sha256": "d231c0d2f76e60114857a054e1ff21816469da83f7c98f621d0600e4d0f6922d",
+      "dso": "dso5",
+      "tier": "main",
       "group": "residual_initial",
       "model": "residual",
       "title": "Positive patches \u00b7 initial run",
@@ -2066,6 +3435,8 @@
       "width": 678,
       "height": 547,
       "sha256": "e40d45787eda7a061ee8b9976bad68ca59af226b808f02282cca978c5dbfab57",
+      "dso": "dso5",
+      "tier": "main",
       "group": "residual_initial",
       "model": "residual",
       "title": "Positive patches \u00b7 initial run",
@@ -2081,6 +3452,8 @@
       "width": 584,
       "height": 455,
       "sha256": "9941b54bc36163f1f6ae0c04e0d79bcf87ecf1b9bb436d87a079afc2319bb3cd",
+      "dso": "dso5",
+      "tier": "main",
       "group": "modeling_38",
       "model": null,
       "title": "Residual attention \u00b7 later training loss",
@@ -2096,6 +3469,8 @@
       "width": 1456,
       "height": 887,
       "sha256": "3f3a174123416908a84002218d4f02a22757fd41af3605985d5fc551d1f35075",
+      "dso": "dso5",
+      "tier": "main",
       "group": "residual_repeat",
       "model": "residual",
       "title": "Positive patches \u00b7 later run",
@@ -2111,6 +3486,8 @@
       "width": 1456,
       "height": 887,
       "sha256": "9e87f03bb9b6c5e9fff1987708d923c77e2fe12d7462fdb325b61bc8518738f9",
+      "dso": "dso5",
+      "tier": "main",
       "group": "residual_repeat",
       "model": "residual",
       "title": "Positive patches \u00b7 later run",
@@ -2126,6 +3503,8 @@
       "width": 1456,
       "height": 887,
       "sha256": "b44839bbd9309e1fe2488d121e722dadb4e5a1fda61bcb2720d7cea418882143",
+      "dso": "dso5",
+      "tier": "main",
       "group": "residual_repeat",
       "model": "residual",
       "title": "Positive patches \u00b7 later run",
@@ -2141,6 +3520,8 @@
       "width": 1456,
       "height": 887,
       "sha256": "0efd4151a5a150dc3f506c9d504dd0610849e827eb2ec8b3e5809bda2769eee9",
+      "dso": "dso5",
+      "tier": "main",
       "group": "residual_repeat",
       "model": "residual",
       "title": "Positive patches \u00b7 later run",
@@ -2156,6 +3537,8 @@
       "width": 1456,
       "height": 887,
       "sha256": "26cb098c747b66c827d78bb0319e975f709390bbb08fef08b1f08cf1b9c17c10",
+      "dso": "dso5",
+      "tier": "main",
       "group": "residual_repeat",
       "model": "residual",
       "title": "Positive patches \u00b7 later run",
@@ -2171,6 +3554,8 @@
       "width": 1456,
       "height": 887,
       "sha256": "be958f8d20367601e2fca027aaaddf473e7405b2aa23ce3ab46c9649f4a71705",
+      "dso": "dso5",
+      "tier": "main",
       "group": "residual_repeat",
       "model": "residual",
       "title": "Positive patches \u00b7 later run",
@@ -2186,6 +3571,8 @@
       "width": 1456,
       "height": 887,
       "sha256": "cf40da4a05438a40467595e33e36c5b8402e2a56e4da4888b3d421900676eb95",
+      "dso": "dso5",
+      "tier": "main",
       "group": "residual_repeat",
       "model": "residual",
       "title": "Positive patches \u00b7 later run",
@@ -2201,6 +3588,8 @@
       "width": 1456,
       "height": 887,
       "sha256": "9e87f03bb9b6c5e9fff1987708d923c77e2fe12d7462fdb325b61bc8518738f9",
+      "dso": "dso5",
+      "tier": "main",
       "group": "residual_repeat",
       "model": "residual",
       "title": "Positive patches \u00b7 later run",
@@ -2216,6 +3605,8 @@
       "width": 1456,
       "height": 887,
       "sha256": "828e01183e747ebed07b7c98fbb6320fee9474ac0b81d63efa248de8e5b2a3f3",
+      "dso": "dso5",
+      "tier": "main",
       "group": "residual_repeat",
       "model": "residual",
       "title": "Positive patches \u00b7 later run",
@@ -2231,6 +3622,8 @@
       "width": 1456,
       "height": 887,
       "sha256": "8141a17d3ecf67c0d12af976512dc6b5968dec05ebad3e3caea310916ce2d1a2",
+      "dso": "dso5",
+      "tier": "main",
       "group": "residual_repeat",
       "model": "residual",
       "title": "Positive patches \u00b7 later run",
@@ -2246,6 +3639,8 @@
       "width": 678,
       "height": 547,
       "sha256": "1999de47f75d022ed9ec8302bdb9c9baf2eec094906887203b239df4d78e71c7",
+      "dso": "dso5",
+      "tier": "main",
       "group": "residual_repeat",
       "model": "residual",
       "title": "Positive patches \u00b7 later run",
@@ -2261,6 +3656,8 @@
       "width": 855,
       "height": 547,
       "sha256": "50c9ca9d4586298d2828ef468fc821fd55877a92dea77f76d5bb25614859cc29",
+      "dso": "dso5",
+      "tier": "main",
       "group": "modeling_44",
       "model": null,
       "title": "Augmented U-Net training and validation loss",
@@ -2276,6 +3673,8 @@
       "width": 1174,
       "height": 407,
       "sha256": "28ec257eb2281b983df31daa6d4be1d52409e4e9e352b772e64ee2fc1bbebb5a",
+      "dso": "dso5",
+      "tier": "main",
       "group": "tiny_examples",
       "model": "tiny",
       "title": "Augmented-model validation examples",
@@ -2291,6 +3690,8 @@
       "width": 1174,
       "height": 407,
       "sha256": "45ea7a2b76d4ee997d032ac230e10a000b09139ead11944d4272877a0f002f03",
+      "dso": "dso5",
+      "tier": "main",
       "group": "tiny_examples",
       "model": "tiny",
       "title": "Augmented-model validation examples",
@@ -2306,15 +3707,810 @@
       "width": 1174,
       "height": 407,
       "sha256": "54724eb41dcdba1e953a57ec5d6e72d2d461f86de2cc9793c938f1578e0dd0eb",
+      "dso": "dso5",
+      "tier": "main",
       "group": "tiny_examples",
       "model": "tiny",
       "title": "Augmented-model validation examples",
       "category": "prediction",
       "example": 3
+    },
+    {
+      "id": "detection_07_01",
+      "file": "detection_07_01.png",
+      "notebook": "11_nodule_detection.ipynb",
+      "cell": 7,
+      "output": 41,
+      "width": 1389,
+      "height": 490,
+      "sha256": "959f2c4947780736f86809cfb60cd75ae1435e3f30bc263e8ecfbefa93dc5713",
+      "dso": "dso1",
+      "tier": "main",
+      "group": "det_training",
+      "model": "det_unet",
+      "title": "U-Net candidate screening",
+      "category": "training",
+      "example": 1
+    },
+    {
+      "id": "detection_07_02",
+      "file": "detection_07_02.png",
+      "notebook": "11_nodule_detection.ipynb",
+      "cell": 7,
+      "output": 42,
+      "width": 595,
+      "height": 453,
+      "sha256": "457648858f89f1e8d9bd534251eb63709de4b62be202a5566b6417be8139b9d7",
+      "dso": "dso1",
+      "tier": "main",
+      "group": "det_training",
+      "model": "det_unet",
+      "title": "U-Net candidate screening",
+      "category": "confusion_matrix",
+      "example": 2
+    },
+    {
+      "id": "detection_07_03",
+      "file": "detection_07_03.png",
+      "notebook": "11_nodule_detection.ipynb",
+      "cell": 7,
+      "output": 43,
+      "width": 567,
+      "height": 453,
+      "sha256": "1cf48285cbdc191f78081c2525fc906880b0e3995cd929a511dbbadd2f4589a0",
+      "dso": "dso1",
+      "tier": "main",
+      "group": "det_training",
+      "model": "det_unet",
+      "title": "U-Net candidate screening",
+      "category": "roc",
+      "example": 3
+    },
+    {
+      "id": "detection_08_01",
+      "file": "detection_08_01.png",
+      "notebook": "11_nodule_detection.ipynb",
+      "cell": 8,
+      "output": 3,
+      "width": 586,
+      "height": 453,
+      "sha256": "a6fd1e329b64654ed55a13d1515a51d81cc758d5e0e57009a1dc1119d2ac5b76",
+      "dso": "dso1",
+      "tier": "main",
+      "group": "det_test",
+      "model": "det_unet",
+      "title": "U-Net \u00b7 test evaluation",
+      "category": "confusion_matrix",
+      "example": 1
+    },
+    {
+      "id": "detection_08_02",
+      "file": "detection_08_02.png",
+      "notebook": "11_nodule_detection.ipynb",
+      "cell": 8,
+      "output": 4,
+      "width": 567,
+      "height": 453,
+      "sha256": "16e2981b24e39947bec9d461ca36b74aad6e817496ff06489936e7d7dc281bac",
+      "dso": "dso1",
+      "tier": "main",
+      "group": "det_test",
+      "model": "det_unet",
+      "title": "U-Net \u00b7 test evaluation",
+      "category": "roc",
+      "example": 2
+    },
+    {
+      "id": "classification_10_01",
+      "file": "classification_10_01.png",
+      "notebook": "11_nodule_classification.ipynb",
+      "cell": 10,
+      "output": 1,
+      "width": 1389,
+      "height": 490,
+      "sha256": "ba914bf774e4112aa4b6a51edaad4b6e3ec6b40e569918e75f70f3af5fa37ff6",
+      "dso": "dso2",
+      "tier": "main",
+      "group": "cls_cnn_training",
+      "model": "cls_cnn",
+      "title": "Improved 3D CNN",
+      "category": "training",
+      "example": 1
+    },
+    {
+      "id": "classification_10_02",
+      "file": "classification_10_02.png",
+      "notebook": "11_nodule_classification.ipynb",
+      "cell": 10,
+      "output": 3,
+      "width": 592,
+      "height": 482,
+      "sha256": "fc80ee0b3096fe861489d6e039f7fd00ef6e85e9761d55a504dafbd04a6ddbdd",
+      "dso": "dso2",
+      "tier": "main",
+      "group": "cls_cnn_training",
+      "model": "cls_cnn",
+      "title": "Improved 3D CNN",
+      "category": "confusion_matrix",
+      "example": 2
+    },
+    {
+      "id": "classification_10_03",
+      "file": "classification_10_03.png",
+      "notebook": "11_nodule_classification.ipynb",
+      "cell": 10,
+      "output": 5,
+      "width": 536,
+      "height": 545,
+      "sha256": "d19c4b7056d700404988ad00a30271ab0606f8ad028e0a903d81c4fcaead5f1b",
+      "dso": "dso2",
+      "tier": "main",
+      "group": "cls_cnn_training",
+      "model": "cls_cnn",
+      "title": "Improved 3D CNN",
+      "category": "roc",
+      "example": 3
+    },
+    {
+      "id": "classification_11_01",
+      "file": "classification_11_01.png",
+      "notebook": "11_nodule_classification.ipynb",
+      "cell": 11,
+      "output": 2,
+      "width": 592,
+      "height": 482,
+      "sha256": "5b4392ef20881b43eed0b4e407951312e2e8b7d86b3dc645bda04489e999d20e",
+      "dso": "dso2",
+      "tier": "main",
+      "group": "cls_cnn_test",
+      "model": "cls_cnn",
+      "title": "Improved 3D CNN \u00b7 test evaluation",
+      "category": "confusion_matrix",
+      "example": 1
+    },
+    {
+      "id": "classification_11_02",
+      "file": "classification_11_02.png",
+      "notebook": "11_nodule_classification.ipynb",
+      "cell": 11,
+      "output": 3,
+      "width": 536,
+      "height": 545,
+      "sha256": "f45633fbbb6add03e220fc884d1d8385bbaedea85e9af1e7dac4f1b27d394950",
+      "dso": "dso2",
+      "tier": "main",
+      "group": "cls_cnn_test",
+      "model": "cls_cnn",
+      "title": "Improved 3D CNN \u00b7 test evaluation",
+      "category": "roc",
+      "example": 2
+    },
+    {
+      "id": "classification_15_01",
+      "file": "classification_15_01.png",
+      "notebook": "11_nodule_classification.ipynb",
+      "cell": 15,
+      "output": 1,
+      "width": 1389,
+      "height": 490,
+      "sha256": "228ad098bb12d85ddc3bfd6abffbd10d4134859da846d98516204b4f17441b8e",
+      "dso": "dso2",
+      "tier": "main",
+      "group": "cls_resnet_training",
+      "model": "cls_resnet",
+      "title": "ResNet3D Lite",
+      "category": "training",
+      "example": 1
+    },
+    {
+      "id": "classification_15_02",
+      "file": "classification_15_02.png",
+      "notebook": "11_nodule_classification.ipynb",
+      "cell": 15,
+      "output": 2,
+      "width": 586,
+      "height": 453,
+      "sha256": "978d45717347fe2428a454ced469e6851758594f945612ca3b1cbf0088028a3e",
+      "dso": "dso2",
+      "tier": "main",
+      "group": "cls_resnet_training",
+      "model": "cls_resnet",
+      "title": "ResNet3D Lite",
+      "category": "confusion_matrix",
+      "example": 2
+    },
+    {
+      "id": "classification_15_03",
+      "file": "classification_15_03.png",
+      "notebook": "11_nodule_classification.ipynb",
+      "cell": 15,
+      "output": 3,
+      "width": 567,
+      "height": 453,
+      "sha256": "a4cea814c4327395fd5b307a821907bd4b87e0d77a9d6ce5985a686e63c597e8",
+      "dso": "dso2",
+      "tier": "main",
+      "group": "cls_resnet_training",
+      "model": "cls_resnet",
+      "title": "ResNet3D Lite",
+      "category": "roc",
+      "example": 3
+    },
+    {
+      "id": "classification_20_01",
+      "file": "classification_20_01.png",
+      "notebook": "11_nodule_classification.ipynb",
+      "cell": 20,
+      "output": 1,
+      "width": 1389,
+      "height": 490,
+      "sha256": "a78c301872674b2fd91b60e9cbcd8ec902500e29e43a4b124f6ab38bd72b33c5",
+      "dso": "dso2",
+      "tier": "main",
+      "group": "cls_unet_training",
+      "model": "cls_unet",
+      "title": "U-Net encoder classifier",
+      "category": "training",
+      "example": 1
+    },
+    {
+      "id": "classification_20_02",
+      "file": "classification_20_02.png",
+      "notebook": "11_nodule_classification.ipynb",
+      "cell": 20,
+      "output": 2,
+      "width": 586,
+      "height": 453,
+      "sha256": "8f4032d8ed37d76afedc7a78ee8574fd1d8a197c86044cb51fc8aac0f5b1baee",
+      "dso": "dso2",
+      "tier": "main",
+      "group": "cls_unet_training",
+      "model": "cls_unet",
+      "title": "U-Net encoder classifier",
+      "category": "confusion_matrix",
+      "example": 2
+    },
+    {
+      "id": "classification_20_03",
+      "file": "classification_20_03.png",
+      "notebook": "11_nodule_classification.ipynb",
+      "cell": 20,
+      "output": 3,
+      "width": 567,
+      "height": 453,
+      "sha256": "92c89191fc2d30263c4912b0141899c6db6802ae949c1d0fbf877d076267ef9f",
+      "dso": "dso2",
+      "tier": "main",
+      "group": "cls_unet_training",
+      "model": "cls_unet",
+      "title": "U-Net encoder classifier",
+      "category": "roc",
+      "example": 3
+    },
+    {
+      "id": "resampling_08_01",
+      "file": "resampling_08_01.png",
+      "notebook": "3_resample_ct_scans (1).ipynb",
+      "cell": 8,
+      "output": 1,
+      "width": 1189,
+      "height": 603,
+      "sha256": "2dbc921a7b42a72b0f4206c0fc40b5427c9be3ef4887ca3dc82adbf4dffbc9a6",
+      "dso": "shared",
+      "tier": "preparation",
+      "group": "resampling_8",
+      "model": null,
+      "title": "Original and resampled CT",
+      "category": "preparation",
+      "example": 1
+    },
+    {
+      "id": "lung_demo_10_01",
+      "file": "lung_demo_10_01.png",
+      "notebook": "4_segment_lungs.ipynb (1).ipynb",
+      "cell": 10,
+      "output": 1,
+      "width": 481,
+      "height": 502,
+      "sha256": "a6d82b48fa3c0aeaa4e0f122bd64f7d8b2b1e2f2f1183f3f19603dded50d395b",
+      "dso": "shared",
+      "tier": "preparation",
+      "group": "lung_demo_10",
+      "model": null,
+      "title": "Historical lung-mask generation steps",
+      "category": "preparation",
+      "example": 1
+    },
+    {
+      "id": "lung_demo_10_02",
+      "file": "lung_demo_10_02.png",
+      "notebook": "4_segment_lungs.ipynb (1).ipynb",
+      "cell": 10,
+      "output": 2,
+      "width": 481,
+      "height": 502,
+      "sha256": "631642fe33cd842acfe85ad836650b0138c44b2cc68972c1bd5f296cc0fdc578",
+      "dso": "shared",
+      "tier": "preparation",
+      "group": "lung_demo_10",
+      "model": null,
+      "title": "Historical lung-mask generation steps",
+      "category": "preparation",
+      "example": 2
+    },
+    {
+      "id": "lung_demo_10_03",
+      "file": "lung_demo_10_03.png",
+      "notebook": "4_segment_lungs.ipynb (1).ipynb",
+      "cell": 10,
+      "output": 3,
+      "width": 481,
+      "height": 502,
+      "sha256": "76faeb3ba6b087c16187d84f333d66581c18c8eb452a9e8b8f599fa388b4d5c7",
+      "dso": "shared",
+      "tier": "preparation",
+      "group": "lung_demo_10",
+      "model": null,
+      "title": "Historical lung-mask generation steps",
+      "category": "preparation",
+      "example": 3
+    },
+    {
+      "id": "lung_demo_10_04",
+      "file": "lung_demo_10_04.png",
+      "notebook": "4_segment_lungs.ipynb (1).ipynb",
+      "cell": 10,
+      "output": 4,
+      "width": 1181,
+      "height": 609,
+      "sha256": "0e42b82e29447158f88409fa7d80cee897f38c51907441058abd6c877dc3a141",
+      "dso": "shared",
+      "tier": "preparation",
+      "group": "lung_demo_10",
+      "model": null,
+      "title": "Historical lung-mask generation steps",
+      "category": "preparation",
+      "example": 4
+    },
+    {
+      "id": "lung_demo_16_01",
+      "file": "lung_demo_16_01.png",
+      "notebook": "4_segment_lungs.ipynb (1).ipynb",
+      "cell": 16,
+      "output": 1,
+      "width": 1394,
+      "height": 609,
+      "sha256": "14c9e69ab7f439bf55009fc38f4d8c059f174445b554796fd48448cc30df92e6",
+      "dso": "shared",
+      "tier": "preparation",
+      "group": "lung_demo_16",
+      "model": null,
+      "title": "Historical lung-mask overlays",
+      "category": "preparation",
+      "example": 1
+    },
+    {
+      "id": "lung_demo_16_02",
+      "file": "lung_demo_16_02.png",
+      "notebook": "4_segment_lungs.ipynb (1).ipynb",
+      "cell": 16,
+      "output": 2,
+      "width": 1394,
+      "height": 609,
+      "sha256": "3957ee81fe7a7a245defb2b805da17a9745a90131b5d621568289a8f14eadbbd",
+      "dso": "shared",
+      "tier": "preparation",
+      "group": "lung_demo_16",
+      "model": null,
+      "title": "Historical lung-mask overlays",
+      "category": "preparation",
+      "example": 2
+    },
+    {
+      "id": "lung_demo_16_03",
+      "file": "lung_demo_16_03.png",
+      "notebook": "4_segment_lungs.ipynb (1).ipynb",
+      "cell": 16,
+      "output": 3,
+      "width": 1394,
+      "height": 609,
+      "sha256": "1a34d1f80f396face093b7f96b5a86e14540a5ada853a5647fa1f88e72a2871a",
+      "dso": "shared",
+      "tier": "preparation",
+      "group": "lung_demo_16",
+      "model": null,
+      "title": "Historical lung-mask overlays",
+      "category": "preparation",
+      "example": 3
+    },
+    {
+      "id": "lung_demo_16_04",
+      "file": "lung_demo_16_04.png",
+      "notebook": "4_segment_lungs.ipynb (1).ipynb",
+      "cell": 16,
+      "output": 4,
+      "width": 1394,
+      "height": 609,
+      "sha256": "e4f23b3987ed7ba8cf47e55f14a6328024a74201e325add24433a30cf5ca506d",
+      "dso": "shared",
+      "tier": "preparation",
+      "group": "lung_demo_16",
+      "model": null,
+      "title": "Historical lung-mask overlays",
+      "category": "preparation",
+      "example": 4
+    },
+    {
+      "id": "lung_demo_16_05",
+      "file": "lung_demo_16_05.png",
+      "notebook": "4_segment_lungs.ipynb (1).ipynb",
+      "cell": 16,
+      "output": 5,
+      "width": 1394,
+      "height": 609,
+      "sha256": "761cd2acad3726f55a68129a0f29a7884e48a3dec6d3d73f016f4bbf18362e3e",
+      "dso": "shared",
+      "tier": "preparation",
+      "group": "lung_demo_16",
+      "model": null,
+      "title": "Historical lung-mask overlays",
+      "category": "preparation",
+      "example": 5
+    },
+    {
+      "id": "candidates_06_01",
+      "file": "candidates_06_01.png",
+      "notebook": "8_nodule_detection_preparation (1).ipynb",
+      "cell": 6,
+      "output": 1,
+      "width": 405,
+      "height": 442,
+      "sha256": "00a2355a382ca10a0706a26b1b209d36bd3aab848eeb77706864d4aa3cae025e",
+      "dso": "shared",
+      "tier": "preparation",
+      "group": "candidates_6",
+      "model": null,
+      "title": "Candidate visualization \u00b7 initial coordinates",
+      "category": "preparation",
+      "example": 1
+    },
+    {
+      "id": "candidates_07_01",
+      "file": "candidates_07_01.png",
+      "notebook": "8_nodule_detection_preparation (1).ipynb",
+      "cell": 7,
+      "output": 1,
+      "width": 355,
+      "height": 442,
+      "sha256": "92ef7ab98b0fb5f836e4e72453001c46c6607d847a942162c3707ec60c2a4429",
+      "dso": "shared",
+      "tier": "preparation",
+      "group": "candidates_7",
+      "model": null,
+      "title": "Candidate visualization \u00b7 initial coordinates",
+      "category": "preparation",
+      "example": 1
+    },
+    {
+      "id": "candidates_09_01",
+      "file": "candidates_09_01.png",
+      "notebook": "8_nodule_detection_preparation (1).ipynb",
+      "cell": 9,
+      "output": 1,
+      "width": 405,
+      "height": 425,
+      "sha256": "5cc25062ec8afdec76bc0519ee9696a1aa25189b28c5af365bfc71c9c90fad08",
+      "dso": "shared",
+      "tier": "preparation",
+      "group": "candidates_9",
+      "model": null,
+      "title": "Strict positive candidate",
+      "category": "preparation",
+      "example": 1
+    },
+    {
+      "id": "candidates_10_01",
+      "file": "candidates_10_01.png",
+      "notebook": "8_nodule_detection_preparation (1).ipynb",
+      "cell": 10,
+      "output": 1,
+      "width": 405,
+      "height": 425,
+      "sha256": "5070cc84aa72ac9e33bb5854a208415c6bc9c9192197151f4264ebd8be1c846e",
+      "dso": "shared",
+      "tier": "preparation",
+      "group": "candidates_10",
+      "model": null,
+      "title": "Strict positive candidate \u00b7 second example",
+      "category": "preparation",
+      "example": 1
+    },
+    {
+      "id": "candidates_12_01",
+      "file": "candidates_12_01.png",
+      "notebook": "8_nodule_detection_preparation (1).ipynb",
+      "cell": 12,
+      "output": 1,
+      "width": 405,
+      "height": 425,
+      "sha256": "deeddedf7b4e5289b0a85f2310058802920fa597686fc7d1a75c398c692651b8",
+      "dso": "shared",
+      "tier": "preparation",
+      "group": "candidates_12",
+      "model": null,
+      "title": "Negative candidate \u00b7 original notebook label",
+      "category": "preparation",
+      "example": 1
+    },
+    {
+      "id": "candidates_13_01",
+      "file": "candidates_13_01.png",
+      "notebook": "8_nodule_detection_preparation (1).ipynb",
+      "cell": 13,
+      "output": 1,
+      "width": 405,
+      "height": 425,
+      "sha256": "12a03d67e465be612aef49765e78575196ccb6b9450b102155b0a147b3493038",
+      "dso": "shared",
+      "tier": "preparation",
+      "group": "candidates_13",
+      "model": null,
+      "title": "Negative candidate example",
+      "category": "preparation",
+      "example": 1
+    },
+    {
+      "id": "pilot_balance_04_01",
+      "file": "pilot_balance_04_01.png",
+      "notebook": "5c_balance_dataset.ipynb",
+      "cell": 4,
+      "output": 1,
+      "width": 713,
+      "height": 451,
+      "sha256": "00e3c5ad15e8e6c628827e09b0335757be311b156948733fdf374f1f3e4f1cf8",
+      "dso": "shared",
+      "tier": "pilot",
+      "group": "pilot_balance_4",
+      "model": null,
+      "title": "Pilot class distribution \u00b7 before balancing",
+      "category": "preparation",
+      "example": 1
+    },
+    {
+      "id": "pilot_balance_07_01",
+      "file": "pilot_balance_07_01.png",
+      "notebook": "5c_balance_dataset.ipynb",
+      "cell": 7,
+      "output": 1,
+      "width": 695,
+      "height": 451,
+      "sha256": "48b5306bd15504d74af2df80492c16cb57a3daafd35ad2b4a4f5c5b2f3873f3a",
+      "dso": "shared",
+      "tier": "pilot",
+      "group": "pilot_balance_7",
+      "model": null,
+      "title": "Pilot class distribution \u00b7 after balancing",
+      "category": "preparation",
+      "example": 1
+    },
+    {
+      "id": "pilot_cnn_16_01",
+      "file": "pilot_cnn_16_01.png",
+      "notebook": "7_train_classifier.ipynb",
+      "cell": 16,
+      "output": 1,
+      "width": 708,
+      "height": 470,
+      "sha256": "352b00b9ce66173072d6c7f622538bbd5c5ae635b6f02aa04dcedd7794232298",
+      "dso": "dso1",
+      "tier": "pilot",
+      "group": "pilot_cnn_training",
+      "model": "pilot_cnn",
+      "title": "Pilot CNN \u00b7 loss curves",
+      "category": "training",
+      "example": 1
+    },
+    {
+      "id": "pilot_cnn_17_01",
+      "file": "pilot_cnn_17_01.png",
+      "notebook": "7_train_classifier.ipynb",
+      "cell": 17,
+      "output": 1,
+      "width": 700,
+      "height": 470,
+      "sha256": "ba3566a3aabef3a5d11db16866c995a44fd43e5ba3ce88cef8ebb9d1866119c1",
+      "dso": "dso1",
+      "tier": "pilot",
+      "group": "pilot_cnn_training",
+      "model": "pilot_cnn",
+      "title": "Pilot CNN \u00b7 validation accuracy",
+      "category": "training",
+      "example": 1
+    },
+    {
+      "id": "pilot_cnn_24_01",
+      "file": "pilot_cnn_24_01.png",
+      "notebook": "7_train_classifier.ipynb",
+      "cell": 24,
+      "output": 1,
+      "width": 1179,
+      "height": 609,
+      "sha256": "36b9f6ced3bafd87e8bbc8547e692fb0cf2c2acaf37e5865108d07979cfe5ebd",
+      "dso": "dso1",
+      "tier": "pilot",
+      "group": "pilot_cnn_cam",
+      "model": "pilot_cnn",
+      "title": "Pilot CNN \u00b7 Grad-CAM example",
+      "category": "gradcam",
+      "example": 1
+    },
+    {
+      "id": "pilot_resnet_09_01",
+      "file": "pilot_resnet_09_01.png",
+      "notebook": "7b_train_classifier_resnet18.ipynb",
+      "cell": 9,
+      "output": 1,
+      "width": 833,
+      "height": 470,
+      "sha256": "1511cb2a303d31013163111cb3f47452edc22071a17a53a4cf12d6b04d612457",
+      "dso": "dso1",
+      "tier": "pilot",
+      "group": "pilot_resnet_training",
+      "model": "pilot_resnet",
+      "title": "Pilot ResNet-18 \u00b7 training curves",
+      "category": "training",
+      "example": 1
+    },
+    {
+      "id": "pilot_resnet_09_02",
+      "file": "pilot_resnet_09_02.png",
+      "notebook": "7b_train_classifier_resnet18.ipynb",
+      "cell": 9,
+      "output": 2,
+      "width": 846,
+      "height": 470,
+      "sha256": "cadf5148e7d03dcec67efd61532d6103ad1081b7f3e35eb48ad884182e851014",
+      "dso": "dso1",
+      "tier": "pilot",
+      "group": "pilot_resnet_training",
+      "model": "pilot_resnet",
+      "title": "Pilot ResNet-18 \u00b7 training curves",
+      "category": "training",
+      "example": 2
+    },
+    {
+      "id": "pilot_resnet_15_01",
+      "file": "pilot_resnet_15_01.png",
+      "notebook": "7b_train_classifier_resnet18.ipynb",
+      "cell": 15,
+      "output": 1,
+      "width": 1179,
+      "height": 609,
+      "sha256": "28127398e6897e11e17418f9b8a8f11c4f409cc11e51240f22b21d4e3bbac611",
+      "dso": "dso1",
+      "tier": "pilot",
+      "group": "pilot_resnet_cam",
+      "model": "pilot_resnet",
+      "title": "Pilot ResNet-18 \u00b7 Grad-CAM example",
+      "category": "gradcam",
+      "example": 1
+    }
+  ],
+  "animations": [
+    {
+      "id": "pilot_cnn_animation",
+      "file": "gradcam_scroll.gif",
+      "dso": "dso1",
+      "tier": "pilot",
+      "model": "pilot_cnn",
+      "category": "gradcam",
+      "title": "Pilot CNN \u00b7 Grad-CAM slice sequence",
+      "notebook": "7_train_classifier.ipynb",
+      "cell": 32,
+      "source_file": "gradcam_scroll.gif",
+      "width": 616,
+      "height": 638,
+      "frames": 48,
+      "first_slice": 16,
+      "sha256": "595495a22d678311953013e46f6c651d90314458f66e314b85606338b65688b8"
+    }
+  ],
+  "sources": [
+    {
+      "notebook": "01_luna16_Data Acquisition.ipynb",
+      "dso": "dso5",
+      "tier": "main",
+      "role": "Segmentation research"
+    },
+    {
+      "notebook": "02_Modeling_Segmentation.ipynb",
+      "dso": "dso5",
+      "tier": "main",
+      "role": "Segmentation research"
+    },
+    {
+      "notebook": "11_nodule_detection.ipynb",
+      "prefix": "detection",
+      "dso": "dso1",
+      "tier": "main",
+      "role": "Primary detection results"
+    },
+    {
+      "notebook": "11_nodule_classification.ipynb",
+      "prefix": "classification",
+      "dso": "dso2",
+      "tier": "main",
+      "role": "Primary binary classification results"
+    },
+    {
+      "notebook": "3_resample_ct_scans (1).ipynb",
+      "prefix": "resampling",
+      "dso": "shared",
+      "tier": "preparation",
+      "role": "Resampling \u00b7 888 scans"
+    },
+    {
+      "notebook": "4_segment_lungs.ipynb (1).ipynb",
+      "prefix": "lung_demo",
+      "dso": "shared",
+      "tier": "preparation",
+      "role": "Historical threshold-based lung masks"
+    },
+    {
+      "notebook": "8_nodule_detection_preparation (1).ipynb",
+      "prefix": "candidates",
+      "dso": "shared",
+      "tier": "preparation",
+      "role": "Candidate matching \u00b7 754,975 candidates"
+    },
+    {
+      "notebook": "9_Detection_Dataset_Creation (2).ipynb",
+      "prefix": "patch_dataset",
+      "dso": "shared",
+      "tier": "preparation",
+      "role": "Patch extraction \u00b7 1,215 positives / 8,000 negatives"
+    },
+    {
+      "notebook": "5c_balance_dataset.ipynb",
+      "prefix": "pilot_balance",
+      "dso": "shared",
+      "tier": "pilot",
+      "role": "Pilot balancing \u00b7 196 patches"
+    },
+    {
+      "notebook": "6_create_dataset.ipynb",
+      "prefix": "pilot_split",
+      "dso": "shared",
+      "tier": "pilot",
+      "role": "Pilot split \u00b7 137 train / 29 validation / 30 test"
+    },
+    {
+      "notebook": "7_train_classifier.ipynb",
+      "prefix": "pilot_cnn",
+      "dso": "dso1",
+      "tier": "pilot",
+      "role": "Early CNN and Grad-CAM exploration"
+    },
+    {
+      "notebook": "7b_train_classifier_resnet18.ipynb",
+      "prefix": "pilot_resnet",
+      "dso": "dso1",
+      "tier": "pilot",
+      "role": "Early 3D ResNet-18 exploration"
     }
   ],
   "notebooks": {
     "01_luna16_Data Acquisition.ipynb": "8e67d8a1cca2b492346bf91aa7cddd531661aed9896bb5f359845a65d6eb914a",
-    "02_Modeling_Segmentation.ipynb": "98e42fde0e626d9bc0ce09fe78258e887f77b6a028ca79214f6f59d714db77d5"
+    "02_Modeling_Segmentation.ipynb": "98e42fde0e626d9bc0ce09fe78258e887f77b6a028ca79214f6f59d714db77d5",
+    "11_nodule_detection.ipynb": "784a9a876812592b2c487626871e7c8edf5ab8cc45bdc09f041dbe6da99d343b",
+    "11_nodule_classification.ipynb": "0825675149e88bb9e5b5c36355464f6507f9c2aba26746451660d4b2594b2336",
+    "3_resample_ct_scans (1).ipynb": "7e4c538c3843f71b82f9437aa3403eb5573a94817b1c8b6e479bdcc1e64dfa37",
+    "4_segment_lungs.ipynb (1).ipynb": "5d7e186f150dd186575bc1bae9e518a65491618b336da6bdd088fc880a8582a9",
+    "8_nodule_detection_preparation (1).ipynb": "e349cbb7619d7d7bbf23a763eb99f8645927c27f0c92f69c5aae22f7b5f2ef32",
+    "9_Detection_Dataset_Creation (2).ipynb": "f730b265d57985de16821de35f7eabe1371cb89b65a7649fc6f66964d8b0647b",
+    "5c_balance_dataset.ipynb": "9bbebba7ac866bbf0f3b1d5a7d4065c61af706a3e7639721137fdaa913d83dfe",
+    "6_create_dataset.ipynb": "775891803268c16316900791e8c4905a4e0bfe5e3384f12d989ce75069ae1c48",
+    "7_train_classifier.ipynb": "4fa6b63d1b0347a8fff905e2d49fb767c591e89f72022ebbf0363970264175f0",
+    "7b_train_classifier_resnet18.ipynb": "cf0b5818bec19ad6592f17bb8eccfd50153693d299a6bab0ba7d37f1a8837776"
   }
 }

@@ -7,9 +7,14 @@ import hashlib
 import io
 import json
 import re
+import shutil
 from pathlib import Path
 
 from PIL import Image
+
+from archive_catalog import (BINARY_EVALUATIONS, CLASSIFICATION, DETECTION, DSOS,
+                             EXTRA_MODELS, EXTRA_NOTEBOOKS, EXTRA_TRAINING,
+                             FIGURE_CELLS, PILOT_CNN, PREPARATION_TITLES)
 
 ROOT = Path(__file__).resolve().parents[1]
 DESTINATION = ROOT / "assets" / "archive"
@@ -84,15 +89,36 @@ def output_text(cell):
     return "\n".join("".join(o.get("text", [])) for o in cell.get("outputs", []))
 
 
+def training_points(text, accuracy_scale):
+    """Parse only stored epoch summaries; never execute notebook source."""
+    points = []
+    for line in text.splitlines():
+        if re.search(r"%\||it/s|s/it", line):
+            continue
+        epoch = re.search(r"Epoch\s*\[?(\d+)", line)
+        train = re.search(r"Train Loss\s*[:=]\s*([0-9.]+)", line)
+        val = re.search(r"Val Loss\s*[:=]\s*([0-9.]+)", line)
+        if not (epoch and train and val):
+            continue
+        point = dict(epoch=int(epoch[1]), train_loss=float(train[1]), validation_loss=float(val[1]))
+        before, after = line.split("Val Loss", 1)
+        train_acc = re.search(r"(?:Train Acc|Acc)\s*[:=]\s*([0-9.]+)", before)
+        val_acc = re.search(r"(?:Val Acc|Acc)\s*[:=]\s*([0-9.]+)", after)
+        if train_acc:
+            point["train_accuracy"] = float(train_acc[1]) / accuracy_scale
+        if val_acc:
+            point["validation_accuracy"] = float(val_acc[1]) / accuracy_scale
+        points.append(point)
+    return points
+
+
 def extract():
     DESTINATION.mkdir(parents=True, exist_ok=True)
-    notebooks = {
-        p.name: json.loads(p.read_text(encoding="utf-8"))
-        for p in sorted((ROOT / "notebooks").glob("*.ipynb"))
-    }
+    selected = [ACQUISITION, MODELING, *EXTRA_NOTEBOOKS]
+    notebooks = {name: json.loads((ROOT / "notebooks" / name).read_text(encoding="utf-8")) for name in selected}
     figures = []
     for name, notebook in notebooks.items():
-        prefix = "preparation" if name == ACQUISITION else "modeling"
+        prefix = ("preparation" if name == ACQUISITION else "modeling") if name not in EXTRA_NOTEBOOKS else EXTRA_NOTEBOOKS[name]["prefix"]
         for cell_index, cell in enumerate(notebook["cells"]):
             image_index = 0
             for output_index, output in enumerate(cell.get("outputs", [])):
@@ -109,6 +135,8 @@ def extract():
                               cell=cell_index + 1, output=output_index + 1,
                               width=width, height=height,
                               sha256=hashlib.sha256(data).hexdigest())
+                metadata = EXTRA_NOTEBOOKS.get(name, dict(dso="dso5", tier="main"))
+                record.update(dso=metadata["dso"], tier=metadata["tier"])
                 if name == MODELING and cell_index in PREDICTIONS:
                     group, model, title, count = PREDICTIONS[cell_index]
                     record.update(group=group, model=model, title=title,
@@ -118,9 +146,17 @@ def extract():
                     record.update(group=f"preparation_{cell_index}", model=None,
                                   title=PREPARATION.get(cell_index, "CT preparation"),
                                   category="preparation", example=image_index)
-                else:
+                elif name == MODELING:
                     record.update(group=f"modeling_{cell_index}", model=None,
                                   title=CHARTS.get(cell_index, "Recorded experiment chart"), category="chart", example=image_index)
+                elif (name, cell_index + 1) in FIGURE_CELLS:
+                    group, model, title, categories = FIGURE_CELLS[(name, cell_index + 1)]
+                    record.update(group=group, model=model, title=title,
+                                  category=categories[image_index - 1], example=image_index)
+                else:
+                    record.update(group=f"{prefix}_{cell_index + 1}", model=None,
+                                  title=PREPARATION_TITLES.get((name, cell_index + 1), metadata["role"]),
+                                  category="preparation", example=image_index)
                 figures.append(record)
 
     experiments = []
@@ -138,6 +174,7 @@ def extract():
             if match:
                 metrics[key] = float(match.group(1))
         experiments.append(dict(id=identifier, model=model, label=label, sample_count=count,
+                                dso="dso5", tier="main", stage="historical", accuracy_basis="notebook output",
                                 note=note, metrics=metrics, notebook=MODELING, cell=index + 1))
 
     training = []
@@ -147,24 +184,79 @@ def extract():
                 for epoch, train, val in re.findall(
                     r"Epoch \[(\d+)/\d+\] - Train Loss: ([0-9.]+) \| Val Loss: ([0-9.]+)", text)]
         training.append(dict(id=identifier, model=model, label=label, points=rows,
+                             dso="dso5", tier="main", loss="Binary cross-entropy", note="Historical patch split; validation inherits augmentation.",
                              training_patches=train_count, validation_patches=validation_count,
                              saved_epochs=[int(x) for x in re.findall(r"New best model saved at epoch (\d+)", text)],
                              notebook=MODELING, cell=index + 1))
+
+    for specification in EXTRA_TRAINING:
+        run = dict(specification)
+        text = output_text(notebooks[run["notebook"]]["cells"][run["cell"] - 1])
+        run["points"] = training_points(text, run.pop("accuracy_scale"))
+        if not run["points"]:
+            raise ValueError(f"No stored epochs found for {run['id']}")
+        training.append(run)
+
+    for specification in BINARY_EVALUATIONS:
+        record = dict(specification)
+        text = output_text(notebooks[record["notebook"]]["cells"][record["cell"] - 1])
+        auc_match = re.search(r"(?:Final )?(?:Test )?AUC Score:\s*([0-9.]+)", text)
+        if not auc_match:
+            raise ValueError(f"No stored AUC found for {record['id']}")
+        matrix = record["matrix"]
+        count = sum(map(sum, matrix))
+        record.update(tier="main", label="Best checkpoint · " + record["stage"], sample_count=count,
+                      metrics=dict(accuracy=(matrix[0][0] + matrix[1][1]) / count, roc_auc=float(auc_match[1])),
+                      accuracy_basis="Arithmetic from transcribed saved confusion matrix; no predictions recomputed")
+        for kind in ["matrix", "roc"]:
+            figure = next(f for f in figures if f["notebook"] == record["notebook"]
+                          and f["cell"] == record["cell"] and f["example"] == record[kind + "_figure"])
+            record[kind + "_figure_id"] = figure["id"]
+            record[kind + "_figure_sha256"] = figure["sha256"]
+        if record["stage"] == "validation":
+            run = next(r for r in training if r["model"] == record["model"])
+            record["last_epoch_accuracy"] = run["points"][-1]["validation_accuracy"]
+        experiments.append(record)
+
+    pilot_text = output_text(notebooks[PILOT_CNN]["cells"][14])
+    pilot_accuracy = re.search(r"Test Accuracy:\s*([0-9.]+)", pilot_text)
+    if not pilot_accuracy:
+        raise ValueError("Pilot test accuracy is missing")
+    experiments.append(dict(id="pilot_cnn_test", model="pilot_cnn", dso="dso1", tier="pilot", stage="test",
+                            label="Pilot CNN · test", sample_count=30, metrics=dict(accuracy=float(pilot_accuracy[1])),
+                            accuracy_basis="Printed notebook test accuracy, rounded to four decimals",
+                            notebook=PILOT_CNN, cell=15,
+                            note="Earlier 196-patch pilot. Test split: 30 patches; no ROC-AUC or confusion matrix was saved."))
 
     models = []
     for identifier, name, filename, parameters, description in MODELS:
         path = ROOT / "models" / filename
         models.append(dict(id=identifier, name=name, checkpoint=filename,
+                           dso="dso5", tier="main", input_size=48, notebook=MODELING,
                            parameters=parameters, description=description,
                            size_bytes=path.stat().st_size,
                            sha256=hashlib.sha256(path.read_bytes()).hexdigest()))
 
-    manifest = dict(schema_version=1, title="pulmoTrack-farahsayari contribution",
+    for specification in EXTRA_MODELS:
+        models.append(dict(specification, input_size=64, checkpoint=None, parameters=None, size_bytes=None, sha256=None))
+
+    animation_source = ROOT / "notebooks" / "gradcam_scroll.gif"
+    shutil.copyfile(animation_source, DESTINATION / "gradcam_scroll.gif")
+    with Image.open(animation_source) as animation:
+        animation_record = dict(id="pilot_cnn_animation", file="gradcam_scroll.gif", dso="dso1", tier="pilot",
+                                model="pilot_cnn", category="gradcam", title="Pilot CNN · Grad-CAM slice sequence",
+                                notebook=PILOT_CNN, cell=32, source_file=animation_source.name,
+                                width=animation.width, height=animation.height, frames=animation.n_frames,
+                                first_slice=16, sha256=hashlib.sha256(animation_source.read_bytes()).hexdigest())
+
+    source_records = [dict(notebook=name, **EXTRA_NOTEBOOKS.get(name, dict(dso="dso5", tier="main", role="Segmentation research")))
+                      for name in notebooks]
+    manifest = dict(schema_version=2, title="pulmoTrack-farahsayari contribution", dsos=DSOS,
                     mode="saved_outputs_only", models=models, experiments=experiments,
-                    training=training, figures=figures,
+                    training=training, figures=figures, animations=[animation_record], sources=source_records,
                     notebooks={name: hashlib.sha256((ROOT / "notebooks" / name).read_bytes()).hexdigest()
                                for name in notebooks})
-    (DESTINATION / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    (DESTINATION / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8", newline="\n")
     print(f"Exported {len(figures)} original figures, {len(experiments)} evaluations, "
           f"{sum(len(run['points']) for run in training)} recorded epochs. No cells executed.")
 

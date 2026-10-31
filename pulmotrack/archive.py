@@ -21,15 +21,19 @@ def figure_path(figure):
     return path
 
 
-def evidence_csv(archive):
+def evidence_csv(archive, dso=None):
     output = io.StringIO(newline="")
-    fields = ["model", "experiment", "samples", "dice", "precision", "recall", "f1",
-              "accuracy", "notebook", "cell", "evaluation_context"]
+    fields = ["dso", "tier", "model", "experiment", "stage", "samples", "dice", "precision", "recall", "f1",
+              "accuracy", "roc_auc", "accuracy_basis", "last_epoch_accuracy", "notebook", "cell", "evaluation_context"]
     writer = csv.DictWriter(output, fieldnames=fields)
     writer.writeheader()
     models = {model["id"]: model["name"] for model in archive["models"]}
     for experiment in archive["experiments"]:
-        writer.writerow(dict(model=models[experiment["model"]], experiment=experiment["label"],
+        if dso and experiment["dso"] != dso:
+            continue
+        writer.writerow(dict(dso=experiment["dso"], tier=experiment["tier"], stage=experiment["stage"],
+                             accuracy_basis=experiment["accuracy_basis"], last_epoch_accuracy=experiment.get("last_epoch_accuracy"),
+                             model=models[experiment["model"]], experiment=experiment["label"],
                              samples=experiment["sample_count"], **experiment["metrics"],
                              notebook=experiment["notebook"], cell=experiment["cell"],
                              evaluation_context=experiment["note"]))

@@ -1,0 +1,5 @@
+*.ipynb -text
+*.png binary
+*.gif binary
+*.pth binary
+assets/archive/manifest.json text eol=lf
