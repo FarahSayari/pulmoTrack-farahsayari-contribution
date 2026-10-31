@@ -362,28 +362,32 @@ def gradcam_panel():
 
 
 def detection():
-    introduction, visual = st.columns([0.85, 1.35], gap="large")
-    with introduction:
-        title("DSO1 / Pulmonary nodule analysis", "Nodule detection",
-              "Identify likely pulmonary nodules among supplied LUNA16 candidates using a deep learning model that examines 3D CT patches. This study evaluates candidate screening, with separate validation and test results.")
-    with visual:
-        st.image(str(ROOT / "assets/DSO1/Nodule detection.png"), width=1460)
-        st.caption("Nodule detection concept · illustrative markers and scores.")
+    st.image(str(ROOT / "assets/DSO1/Nodule detection.png"), width=1460)
+    st.caption("Nodule detection concept · illustrative markers and scores.")
     st.subheader("Model overview")
     cards = [
-        ("Architecture", "3D U-Net encoder", "Double-convolution blocks with batch normalization and ReLU; 32 → 64 → 128 → 256 channels."),
-        ("Dataset", "LUNA16 candidates", "9,215 extracted patches: 1,215 nodule and 8,000 non-nodule examples. Preparation covers 888 CT scans."),
-        ("Input & output", "64 × 64 × 64 voxels", "One-channel, candidate-centered CT patch → two class scores: non-nodule or nodule."),
+        ("Architecture", "3D U-Net encoder",
+         "3D convolutions capture nodule shape and surrounding tissue across CT slices. The encoder learns features at multiple scales, making it a suitable approach for volumetric CT analysis.",
+         "U-Net was developed for biomedical segmentation. Here, its encoder is adapted with global pooling and a two-class head for candidate screening, rather than generating segmentation masks."),
+        ("Dataset", "LUNA16 candidates",
+         "9,215 patches: 1,215 nodules and 8,000 non-nodules, approximately 13% / 87%. Preparation covers 888 CT scans.",
+         "Why not 50 / 50? The preparation run retains all positive candidates and randomly samples 8,000 negatives. This preserves more negative examples than a 1:1 subset; weighted focal loss addresses the imbalance during training."),
+        ("Input & output", "64 × 64 × 64 voxels",
+         "A fixed 3D crop surrounds each candidate with nearby tissue context while using less memory than a full CT volume. The size also halves cleanly through three pooling stages: 64 → 32 → 16 → 8.",
+         "One CT intensity channel enters the encoder; two class scores represent non-nodule and nodule. Fixed-size patches also allow consistent batching during training."),
     ]
-    for column, (label, heading, description) in zip(st.columns(3, gap="medium"), cards):
-        with column:
-            st.html(f'<div class="detection-model-card"><div class="eyebrow">{label}</div>'
-                    f'<h3>{heading}</h3><p>{description}</p></div>')
+    st.html('<div class="detection-model-grid">' + ''.join(
+        f'<div class="detection-model-card"><div class="eyebrow">{html.escape(label)}</div>'
+        f'<h3>{html.escape(heading)}</h3><p>{html.escape(description)}</p>'
+        f'<p>{html.escape(rationale)}</p></div>'
+        for label, heading, description, rationale in cards) + '</div>')
     st.html('<div class="detection-flow" aria-label="Detection architecture">'
             '<span>3D CT patch</span><i>→</i><span>Convolution &amp; pooling</span><i>→</i>'
             '<span>Global average pooling</span><i>→</i><span>Two-class head</span></div>')
     st.caption("The encoder learns volumetric features; a linear head produces class logits, with softmax scores used for ROC evaluation. It has no segmentation decoder or bounding-box output. Segmentation is a separate research challenge.")
+    st.caption("Architecture background: [3D U-Net · Çiçek et al., 2016](https://arxiv.org/abs/1606.06650). These design rationales do not establish a best architecture or optimal patch size; neither comparison was recorded.")
     source(dict(notebook="11_nodule_detection.ipynb", cell=5))
+    source(dict(notebook="9_Detection_Dataset_Creation (2).ipynb", cell=8))
     results_tab, training_tab, cam_tab, prep_tab = st.tabs(["Results", "Training history", "Grad-CAM & pilot studies", "Preparation & scope"])
     with results_tab:
         detection_results()
