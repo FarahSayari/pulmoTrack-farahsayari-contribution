@@ -14,6 +14,7 @@ from PIL import Image
 from pulmotrack.archive import ROOT, evidence_csv, figure_path, load_archive, source_label
 from pulmotrack.detection import confusion_chart, outcome_summary, roc_display
 from pulmotrack.paper import load_paper, paper_path
+from pulmotrack.segmentation import METRIC_LABELS, interpretation as segmentation_interpretation, metric_chart
 
 st.set_page_config(page_title="pulmoTrack | CT Research Workspace", page_icon="🫁", layout="wide")
 st.html(f"<style>{(ROOT / 'assets' / 'style.css').read_text(encoding='utf-8')}</style>")
@@ -447,22 +448,105 @@ def classification():
 
 
 def segmentation():
-    title("DSO5 / Independent research challenge", "Exploratory segmentation", "An additional model-development study of 3D nodule segmentation, with particular interest in tiny nodules.")
+    st.image(str(ROOT / "assets/DSO5/Exploratory segmentation.png"), width=1460)
+    st.caption("DSO5 · Independent research challenge · concept illustration.")
     st.info(dsos["dso5"]["scope"])
+    st.subheader("Model overview")
+    model = st.selectbox("Segmentation model", [m["id"] for m in archive["models"] if m["dso"] == "dso5"],
+                         format_func=lambda value: models[value]["name"], key="seg_model")
+    architecture = {
+        "unet": ("3D U-Net", "An encoder–decoder uses 32 → 64 → 128 feature channels. Two upsampling stages combine decoder features with encoder skip connections to recover the patch’s spatial detail.",
+                 "3D convolutions retain context across CT slices, while skip connections carry local detail into the predicted mask. This baseline explores voxel-level nodule delineation.", "Encoder & skip connections"),
+        "attention": ("Attention 3D U-Net", "The baseline encoder–decoder is extended with attention gates on the skip connections. Each gate weights encoder features before they are combined with decoder features.",
+                      "The gates explore selective use of spatial features during reconstruction. Their benefit must be assessed within each saved cohort; the notebook does not provide a common model benchmark.", "Attention-gated skips"),
+        "residual": ("Residual Attention 3D U-Net", "Residual double-convolution blocks add shortcut paths within the encoder–decoder. Attention gates also weight the encoder features passed through skip connections.",
+                     "This variant explores residual feature reuse alongside attention. The initial and later evaluations are preserved separately because the runs reused the same checkpoint path.", "Residual blocks & attention"),
+        "tiny": ("U-Net · tiny-nodule training", "The baseline 3D U-Net is retained, with a modified training dataset that repeats patches identified as containing tiny nodules and applies augmentation.",
+                 "Oversampling increases their exposure during training. Saved examples and loss curves document this experiment; no numerical overlap evaluation was recorded.", "Encoder & skip connections"),
+    }[model]
+    heading, description, rationale, feature_stage = architecture
+    dataset_detail = ("The tiny-nodule run records 2,140 training and 536 validation entries after oversampling. Repeated entries are not additional unique CT scans."
+                      if model == "tiny" else
+                      "The baseline split records 2,036 training and 509 validation patches. Negative patches use empty reference masks; positive and negative evaluations are kept distinct.")
+    cards = [
+        ("Architecture", heading, description, rationale),
+        ("Dataset & reference", "LUNA16 nodule patches",
+         "Reference nodule masks are spheres generated from annotation centers and diameters. They approximate the nodule region and are distinct from lung-field masks.", dataset_detail),
+        ("Input & output", "48 × 48 × 48 voxels",
+         "One normalized CT intensity channel enters the model. A local 3D crop provides surrounding tissue context while keeping the input smaller than a full CT volume.",
+         "The decoder returns a same-size probability map, one value per voxel. A threshold of 0.5 produces the binary nodule mask used in the recorded evaluations."),
+    ]
+    st.html('<div class="detection-model-grid">' + ''.join(
+        f'<div class="detection-model-card"><div class="eyebrow">{html.escape(label)}</div>'
+        f'<h3>{html.escape(card_heading)}</h3><p>{html.escape(copy)}</p><p>{html.escape(detail)}</p></div>'
+        for label, card_heading, copy, detail in cards) + '</div>')
+    st.html('<div class="detection-flow" aria-label="DSO5 segmentation architecture">'
+            '<span>48³ CT patch</span><i>→</i>'
+            f'<span>{html.escape(feature_stage)}</span><i>→</i><span>3D decoder</span><i>→</i>'
+            '<span>Voxel-wise nodule mask</span></div>')
     scores, examples, training, scope = st.tabs(["Recorded scores", "Prediction examples", "Training history", "Study context"])
     with scores:
-        records = [e for e in archive["experiments"] if e["dso"] == "dso5"]
-        rows = [{"Model": models[e["model"]]["name"], "Experiment": e["label"], "Samples": str(e["sample_count"] or "Not recorded"),
-                 **{name: e["metrics"].get(name.lower()) for name in ["Dice", "Precision", "Recall", "F1", "Accuracy"]}} for e in records]
-        st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch", column_config={
-            name: st.column_config.NumberColumn(name, format="%.4f") for name in ["Dice", "Precision", "Recall", "F1", "Accuracy"]})
-        st.caption("Different samples and empty-mask scoring rules: these results are not a common benchmark. Missing metrics stay unavailable.")
-        selected = st.selectbox("Evaluation context", [e["id"] for e in records], format_func=lambda value: models[experiments[value]["model"]]["name"] + " / " + experiments[value]["label"], key="seg_evaluation")
-        st.write(experiments[selected]["note"])
-        source(experiments[selected])
+        st.subheader("Evaluation results")
+        records = [e for e in archive["experiments"] if e["model"] == model]
+        if records:
+            selected = st.selectbox("Evaluation context", [e["id"] for e in records],
+                                    index=next((i for i, e in enumerate(records) if e["id"] == "unet_validation"), 0),
+                                    format_func=lambda value: experiments[value]["label"], key="seg_evaluation")
+            record = experiments[selected]
+            st.caption(record["note"])
+            primary = "dice" if "dice" in record["metrics"] else "f1"
+            cohort = "Mixed validation" if selected == "unet_validation" else ("Mixed patches" if selected == "attention_mixed" else "Positive patches")
+            with st.container(key="segmentation_metrics"):
+                for column, (label, value, detail) in zip(st.columns(3), [
+                    ("Reported " + METRIC_LABELS[primary], f'{record["metrics"][primary]:.4f}', "Original notebook summary"),
+                    ("Evaluated patches", str(record["sample_count"] or "Not recorded"), "Count for this evaluation only"),
+                    ("Evaluation cohort", cohort, "Historical patch-level evaluation"),
+                ]):
+                    with column:
+                        stat(label, value, detail)
+            chart_column, explanation_column = st.columns([1.1, 1], gap="large")
+            with chart_column:
+                with st.container(border=True):
+                    st.subheader("Recorded segmentation metrics")
+                    st.plotly_chart(metric_chart(record["metrics"]), use_container_width=True, key="segmentation_scores")
+                st.caption("Only recorded values are plotted. No voxel counts, confusion matrix or ROC data were preserved for these evaluations.")
+            with explanation_column:
+                with st.container(border=True):
+                    st.subheader("Reading the metrics")
+                    st.markdown("**Dice / F1** measure overlap between the predicted and reference nodule regions.")
+                    st.markdown("**Precision** describes how much of the predicted nodule region matches the reference; extra voxels reduce precision.")
+                    st.markdown("**Recall** describes how much of the reference region is recovered; missed voxels reduce recall.")
+                    st.markdown("**Voxel accuracy** includes background. It can stay high even when a small nodule is poorly segmented.")
+            st.subheader("Results interpretation")
+            st.write(segmentation_interpretation(record))
+            st.caption("Different samples, augmentation and empty-mask scoring rules prevent a controlled ranking of these model studies.")
+            with st.expander("Evaluation context & source"):
+                st.write(record["note"])
+                source(record)
+        else:
+            run = next(r for r in archive["training"] if r["model"] == model)
+            st.info("This tiny-nodule experiment has no recorded Dice, precision, recall, F1 or voxel-accuracy evaluation. Its original prediction examples and training history remain available in the adjacent tabs.")
+            with st.container(key="segmentation_metrics"):
+                for column, (label, value, detail) in zip(st.columns(3), [
+                    ("Final validation BCE", f'{run["points"][-1]["validation_loss"]:.4f}', "Loss, not an overlap score"),
+                    ("Training entries", f'{run["training_patches"]:,}', "After tiny-nodule oversampling"),
+                    ("Validation entries", f'{run["validation_patches"]:,}', "Historical patch split"),
+                ]):
+                    with column:
+                        stat(label, value, detail)
+            st.subheader("Results interpretation")
+            st.write("The saved loss documents optimization, but does not establish nodule overlap or an improvement over other models. The original figures support qualitative inspection of the predicted masks.")
+        with st.expander("All recorded segmentation evaluations"):
+            all_records = [e for e in archive["experiments"] if e["dso"] == "dso5"]
+            rows = [{"Model": models[e["model"]]["name"], "Experiment": e["label"], "Samples": str(e["sample_count"] or "Not recorded"),
+                     **{label: e["metrics"].get(field) for field, label in METRIC_LABELS.items()}} for e in all_records]
+            st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch", column_config={
+                label: st.column_config.NumberColumn(label, format="%.4f") for label in METRIC_LABELS.values()})
+            st.caption("Historical evaluations use different cohorts. Missing metrics remain unavailable.")
         st.download_button("Download segmentation results CSV", evidence_csv(archive, "dso5"), file_name="dso5_segmentation_results.csv", mime="text/csv")
     with examples:
-        model = st.selectbox("Segmentation model", [m["id"] for m in archive["models"] if m["dso"] == "dso5"], format_func=lambda value: models[value]["name"], key="seg_model")
+        st.subheader("Original segmentation predictions")
+        st.write("Inspect the saved CT slices, spherical reference masks and model predictions for the selected study. The experiment selector identifies the source of each figure; these examples need not belong to the score cohort selected in the first tab.")
         records = [f for f in archive["figures"] if f["model"] == model and f["category"] == "prediction"]
         groups = list(dict.fromkeys(f["group"] for f in records))
         labels = {f["group"]: f["title"] for f in records}
@@ -473,8 +557,12 @@ def segmentation():
         if model == "tiny":
             st.caption("This model has saved examples and a final validation BCE loss of 0.0446; no numerical segmentation evaluation was recorded.")
     with training:
-        training_panel([r for r in archive["training"] if r["dso"] == "dso5"], "segmentation")
+        st.subheader("Learning voxel-level nodule masks")
+        st.write("The recorded studies use binary cross-entropy loss with Adam optimization. These curves show the selected model’s saved training history; initial and later residual-attention runs remain separate.")
+        training_panel([r for r in archive["training"] if r["model"] == model], "segmentation")
     with scope:
+        st.subheader("DSO5 · An independent research challenge")
+        st.write("This exploration studies nodule delineation and model development. Detection and classification do not depend on its generated masks. The intended later pipeline uses the provided LUNA16 lung masks; that integration is not demonstrated in this archive.")
         st.write("Reference nodule masks are spheres drawn from annotation centers and diameters. They are distinct from lung-field masks. Image and mask augmentation is randomized independently; validation inherits augmentation, and splitting is by patch rather than patient.")
         st.write("Repeated residual-attention runs overwrite the same checkpoint path. The presentation comparison averages 0.71–0.75 are not supported by matching numerical summaries in the supplied notebooks, so they are not included here.")
 

@@ -24,7 +24,7 @@ Open **http://localhost:8501**, or double-click **run_app.bat** after installing
 - **Overview:** a research showcase with paper-reported LUNA16 highlights, the three objectives, a CRISP-DM presentation of the workflow, personal contributions and Research Resources.
 - **DSO1 · Detection:** an illustrated introduction, model architecture, best-checkpoint validation and test evaluations, error interpretation, training history and candidate preparation. Pilot Grad-CAM animation and frame inspection are presented separately from the main study.
 - **DSO2 · Classification:** an illustrated introduction and model overview for Improved 3D CNN, ResNet3D Lite and U-Net encoder studies. Each model retains its own cohort, themed evaluation charts, error interpretation and training history.
-- **DSO5 · Segmentation:** historical scores, saved prediction examples, training curves and research context.
+- **DSO5 · Segmentation:** an illustrated independent research challenge with model overviews, themed metric summaries, cohort-specific interpretation, original prediction examples and training curves. Unavailable scores remain missing; no ROC or confusion matrix is synthesized.
 - **CT gallery:** filter original images by objective, study scope and content; download the original PNGs.
 - **Models & sources:** ten documented model studies, selected source notebooks, provenance and CSV/JSON downloads. Four segmentation checkpoints are included; other studies are documented by their outputs.
 
