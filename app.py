@@ -71,16 +71,25 @@ def navigate(view):
 def overview():
     left, right = st.columns([1, 1.28], gap="large")
     with left:
-        st.html('<div class="eyebrow">Pulmonary imaging / LUNA16</div>'
-                '<div class="hero-title">One study.<br><span>Three perspectives.</span></div>'
-                '<div class="hero-copy">Follow the work from nodule candidate detection to classification, '
-                'with an independent exploration of 3D segmentation. A CT research collection by Farah Sayari.</div>')
-        st.button("Explore detection results  →", type="primary", on_click=navigate, args=(VIEWS["dso1"],))
+        st.html('<div class="eyebrow">Academic research / CT imaging</div>'
+                '<h1 class="overview-title">Lung Cancer<br><span>Detection Study</span></h1>'
+                '<div class="overview-slogan">Detect early. Give tomorrow a chance.</div>'
+                '<div class="hero-copy">This academic research study mainly uses <strong>LUNA16</strong> '
+                'to explore pulmonary nodule detection, classification and segmentation.</div>'
+                '<div class="overview-dataset">LUNA16 brings together <strong>888 3D chest CT scans</strong> '
+                'from the LIDC-IDRI database, with nodule annotations for detection research. '
+                '<strong>Approximately 90 GB</strong> in this study’s dataset collection.</div>')
+        st.link_button("Explore the LUNA16 dataset ↗", "https://luna16.grand-challenge.org/Home/", type="primary")
+        st.caption("Approximate study collection size; download size varies with packaging.")
     with right:
         with st.container(border=True):
             st.html('<div class="viewer-label"><strong>CT / MULTIPLANAR VIEWS</strong><span>LUNA16 collection</span></div>')
-            show_figure(next(f for f in archive["figures"] if f["group"] == "preparation_18"))
-            st.caption("Axial · Coronal · Sagittal | normalized CT after lung masking")
+            st.image(str(ROOT / "assets/overview/CT Multiplanar Views Dashboard.png"), width=1401)
+            st.caption("Axial · Coronal · Sagittal | CT overview illustration")
+    with st.container(border=True):
+        st.subheader("Why early detection matters")
+        st.write("Lung cancer is the leading cause of cancer-related deaths worldwide and is often diagnosed at an advanced stage. Detecting it earlier can improve treatment options and patients’ chances of survival. This academic research study explores CT-based methods in support of that goal.")
+        st.caption("Medical context: [World Health Organization — Lung cancer](https://www.who.int/news-room/fact-sheets/detail/lung-cancer).")
     for column, args in zip(st.columns(4), [
         ("Research objectives", "03", "Detection · Classification · Segmentation"),
         ("Main model studies", "08", "Earlier pilot studies are shown separately"),
@@ -90,14 +99,17 @@ def overview():
         with column:
             stat(*args)
     st.subheader("Explore the three objectives")
+    objective_images = {"dso1": "detection.png", "dso2": "classification.png", "dso5": "segmentation.png"}
     for column, dso in zip(st.columns(3, gap="medium"), archive["dsos"]):
         with column:
             with st.container(border=True):
+                st.image(str(ROOT / "assets/overview" / objective_images[dso["id"]]), width=1448)
                 st.html(f'<div class="eyebrow">DSO {dso["number"]} / {html.escape(dso["role"])}</div>')
                 st.subheader(dso["name"])
                 st.write(dso["description"])
                 st.button("Open " + dso["name"].lower() + " →", key="open_" + dso["id"],
                           on_click=navigate, args=(VIEWS[dso["id"]],), width="stretch")
+    st.caption("Overview images illustrate the objectives; their highlighted findings and example scores are not measured study results.")
     st.caption("Detection and classification are the main objectives. Segmentation is a separate research challenge, not a prerequisite model for either stage.")
 
 

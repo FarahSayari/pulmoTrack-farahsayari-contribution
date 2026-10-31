@@ -27,6 +27,11 @@ p { line-height: 1.65; }
 .archive-dot { width: 6px; height: 6px; background: #63d9c1; border-radius: 50%; }
 .hero-title { font-size: clamp(2.3rem, 4vw, 3.65rem); font-weight: 670; line-height: 1.08; letter-spacing: -.055em; margin: 1rem 0 1.15rem; }
 .hero-title span { color: #63d9c1; }
+.overview-title { font-size: clamp(2.2rem, 3.2vw, 3rem) !important; font-weight: 670 !important; line-height: 1.12 !important; letter-spacing: -.045em; margin: .8rem 0 .65rem !important; padding: 0 !important; }
+.overview-title span { color: #63d9c1; }
+.overview-slogan { color: #b9ebe0; font-size: 1.06rem; font-weight: 550; margin-bottom: 1rem; }
+.overview-dataset { color: #a6b5c5; font-size: .9rem; line-height: 1.75; margin: -.5rem 0 1.15rem; }
+.overview-dataset strong { color: #eaf1f6; }
 .hero-copy { color: #a6b5c5; font-size: 1rem; max-width: 470px; line-height: 1.8; margin-bottom: 1.5rem; }
 .hero-foot { font-size: .75rem; color: #a6b5c5; border-left: 2px solid #63d9c1; padding-left: .8rem; }
 .section-intro { color: #a6b5c5; margin: -.15rem 0 1.5rem; max-width: 850px; }
