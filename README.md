@@ -21,7 +21,7 @@ Open **http://localhost:8501**, or double-click **run_app.bat** after installing
 
 ## Workspace
 
-- **Overview:** the three objectives and their distinct roles.
+- **Overview:** a research showcase with paper-reported LUNA16 highlights, the three objectives, a CRISP-DM presentation of the workflow, personal contributions and Research Resources.
 - **DSO1 · Detection:** best-checkpoint validation and test evaluations, training history, candidate preparation, Grad-CAM animation and frame inspection. Earlier 196-patch pilot studies are shown separately.
 - **DSO2 · Classification:** Improved 3D CNN, ResNet3D Lite and U-Net encoder classifier experiments, each with its own cohort and training history.
 - **DSO5 · Segmentation:** historical scores, saved prediction examples, training curves and research context.
@@ -29,6 +29,8 @@ Open **http://localhost:8501**, or double-click **run_app.bat** after installing
 - **Models & sources:** ten documented model studies, selected source notebooks, provenance and CSV/JSON downloads. Four segmentation checkpoints are included; other studies are documented by their outputs.
 
 The interface retains the navy/teal radiology theme. Original notebook figures and the GIF are copied unchanged. Controls browse stored figures or GIF frames, not missing CT arrays.
+
+The overview's 0.95 segmentation Dice, 92% sensitivity at 1.5 false positives per scan and 0.91 classification AUC are attributed to the **team project manuscript, pages 4–5**. They are separate from the notebook-derived evaluations below. The original [PulmoTrack paper](assets/paper/PulmoTrackPaper.pdf) is included unchanged, with an 11-page viewer and PDF download. It is presented as a project manuscript, without a claim of peer-reviewed publication. Generated overview illustrations are identified as concept imagery.
 
 ## Primary evidence
 

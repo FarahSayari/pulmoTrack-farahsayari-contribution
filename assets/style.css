@@ -32,6 +32,26 @@ p { line-height: 1.65; }
 .overview-slogan { color: #b9ebe0; font-size: 1.06rem; font-weight: 550; margin-bottom: 1rem; }
 .overview-dataset { color: #a6b5c5; font-size: .9rem; line-height: 1.75; margin: -.5rem 0 1.15rem; }
 .overview-dataset strong { color: #eaf1f6; }
+.showcase-title { margin-top: .65rem !important; }
+.showcase-intro { margin: .85rem 0 1rem; }
+.showcase-author { color: #9fb3c5; font-size: .78rem; margin: .25rem 0 1.4rem; line-height: 1.7; }
+.showcase-author span { color: #63d9c1; padding: 0 .25rem; }
+.showcase-section { margin: 2rem 0 .5rem; }
+.showcase-section h2 { color: #edf5fa; margin: .4rem 0 .7rem; font-size: 1.55rem; line-height: 1.3; font-weight: 650; }
+.showcase-highlight { border: 1px solid #2b414e; border-top: 2px solid #477f77; border-radius: 12px; background: linear-gradient(135deg, #162732, #111c29); padding: 1.15rem; min-height: 150px; }
+.showcase-highlight-value { color: #75dfc8; font-size: 2.45rem; font-weight: 670; letter-spacing: -.045em; line-height: 1.4; }
+.showcase-highlight .stat-detail { font-size: .73rem; line-height: 1.5; }
+.showcase-objective-title { font-size: 1.12rem !important; line-height: 1.45; margin: .5rem 0; min-height: 3.25rem; }
+.showcase-objective-copy { color: #a6b7c8; font-size: .88rem; line-height: 1.75; min-height: 8rem; margin: 0 0 .5rem; }
+[class*="st-key-objective_card_"] [data-testid="stCaptionContainer"] { min-height: 2.5rem; }
+.showcase-process-card { border: 1px solid #27394b; border-radius: 12px; background: #111e2c; padding: 1.1rem 1.2rem; min-height: 182px; margin: .25rem 0 .75rem; }
+.showcase-process-card h3 { font-size: .99rem !important; margin: .7rem 0 .45rem; min-height: 2.5rem; line-height: 1.4; }
+.showcase-process-card p { font-size: .85rem; color: #a0b2c5; margin: 0; line-height: 1.7; }
+.showcase-contribution { border-left: 2px solid #4f9b8d; background: #11202c; border-radius: 0 10px 10px 0; padding: 1rem 1.25rem; min-height: 133px; margin: .2rem 0 .7rem; }
+.showcase-contribution h3 { margin: 0 0 .5rem; font-size: 1rem !important; }
+.showcase-contribution p { margin: 0; color: #a4b6c8; font-size: .88rem; line-height: 1.7; }
+[data-testid="stLinkButton"] a[kind="primary"] { color: #0b2524 !important; font-weight: 650; }
+@media(max-width: 768px) { .showcase-objective-title, .showcase-objective-copy, .showcase-process-card h3 { min-height: 0; } .showcase-process-card, .showcase-contribution { min-height: 0; } .showcase-section { margin-top: 1.5rem; } .showcase-highlight { min-height: 132px; } }
 .hero-copy { color: #a6b5c5; font-size: 1rem; max-width: 470px; line-height: 1.8; margin-bottom: 1.5rem; }
 .hero-foot { font-size: .75rem; color: #a6b5c5; border-left: 2px solid #63d9c1; padding-left: .8rem; }
 .section-intro { color: #a6b5c5; margin: -.15rem 0 1.5rem; max-width: 850px; }

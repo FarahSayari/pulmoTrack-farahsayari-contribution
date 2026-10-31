@@ -2,4 +2,5 @@
 *.png binary
 *.gif binary
 *.pth binary
+*.pdf binary
 assets/archive/manifest.json text eol=lf

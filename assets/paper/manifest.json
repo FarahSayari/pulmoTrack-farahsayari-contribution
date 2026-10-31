@@ -1,0 +1,106 @@
+{
+  "title": "PulmoTrack: A Deep Learning Solution for Pulmonary Nodule Segmentation, Detection, and Classification on CT and Chest X-ray Scans",
+  "document_type": "Team research manuscript",
+  "date": "May 2025",
+  "file": "PulmoTrackPaper.pdf",
+  "authors": [
+    "Farah Sayari",
+    "Mahdi Landolsi",
+    "Najib Nakhla",
+    "Souha Bachtobji",
+    "Adem Tounsi",
+    "Ala Charfi"
+  ],
+  "sha256": "a819b151f81c87a21a2d7bd49a01a9cb335d3f1ec2d7fdd6a0eb407b3cd8e07e",
+  "pages": [
+    {
+      "page": 1,
+      "file": "page_01.png",
+      "width": 1200,
+      "height": 1553,
+      "sha256": "cb849644af949cea62f97e54170a3ce3c70bcc7d115d74c980964dd759a2e0f2"
+    },
+    {
+      "page": 2,
+      "file": "page_02.png",
+      "width": 1200,
+      "height": 1553,
+      "sha256": "36188f5dc337b1b4fab2fa98628d340a832edabbbe0a939670b87a97450800f5"
+    },
+    {
+      "page": 3,
+      "file": "page_03.png",
+      "width": 1200,
+      "height": 1553,
+      "sha256": "ddf165ba7e1386218e1941552daabec2524dd6b73a9e7b0bc795b1c6c1087c63"
+    },
+    {
+      "page": 4,
+      "file": "page_04.png",
+      "width": 1200,
+      "height": 1553,
+      "sha256": "ba1d2720cc338fa3de9988114b1eda9938419e3c883b63a5571161de00a33732"
+    },
+    {
+      "page": 5,
+      "file": "page_05.png",
+      "width": 1200,
+      "height": 1553,
+      "sha256": "8ebde55be84a420b660204e1cffe862048dd5b467f93c7b7502b820bc488c290"
+    },
+    {
+      "page": 6,
+      "file": "page_06.png",
+      "width": 1200,
+      "height": 1553,
+      "sha256": "ab1756c21d5ad8ef5c2bc0ed081981fe14edf7b3403cdca641fb8723dc1b25f4"
+    },
+    {
+      "page": 7,
+      "file": "page_07.png",
+      "width": 1200,
+      "height": 1553,
+      "sha256": "ee2f09f25fb3b5ab5934449acf0b3f6a0d0d81f8d731c79974c1d4bd589a8e5f"
+    },
+    {
+      "page": 8,
+      "file": "page_08.png",
+      "width": 1200,
+      "height": 1553,
+      "sha256": "d09f5fdb00f8597c5ac7761136bfd1cd4509094ea3a9a75ff42466c7111c66a6"
+    },
+    {
+      "page": 9,
+      "file": "page_09.png",
+      "width": 1200,
+      "height": 1553,
+      "sha256": "01789137c2fcbd8579902cfe3268b14063977b93df4ed0bc2036d7b8a8f9014f"
+    },
+    {
+      "page": 10,
+      "file": "page_10.png",
+      "width": 1200,
+      "height": 1553,
+      "sha256": "5515a6d00bb16232b42477a36493943cbd2ce362252f6be5c1d30da936924103"
+    },
+    {
+      "page": 11,
+      "file": "page_11.png",
+      "width": 1200,
+      "height": 1553,
+      "sha256": "9ca1c639f4329b515b9a42b3154dc97918e21b74576c9806bc2bbeff7e25569c"
+    }
+  ],
+  "highlights": {
+    "ct_scans": 888,
+    "segmentation_dice": 0.95,
+    "detection_sensitivity": 0.92,
+    "false_positives_per_scan": 1.5,
+    "classification_auc": 0.91
+  },
+  "highlights_source_pages": [
+    4,
+    5
+  ],
+  "metric_basis": "Reported in the project manuscript; distinct from the archived notebook evaluations."
+}

@@ -12,6 +12,7 @@ import streamlit as st
 from PIL import Image
 
 from pulmotrack.archive import ROOT, evidence_csv, figure_path, load_archive, source_label
+from pulmotrack.paper import load_paper, paper_path
 
 st.set_page_config(page_title="pulmoTrack | CT Research Workspace", page_icon="🫁", layout="wide")
 st.html(f"<style>{(ROOT / 'assets' / 'style.css').read_text(encoding='utf-8')}</style>")
@@ -68,49 +69,132 @@ def navigate(view):
     st.session_state["navigation"] = view
 
 
+@st.dialog("Research paper", width="large")
+def view_research_paper():
+    paper = load_paper()
+    st.caption(paper["title"])
+    page_number = st.selectbox("PDF page", range(1, len(paper["pages"]) + 1),
+                               format_func=lambda number: f"Page {number} of {len(paper['pages'])}", key="paper_page")
+    page = paper["pages"][page_number - 1]
+    st.image(str(paper_path(page["file"])), width=page["width"])
+    st.caption("Page rendering from the original project manuscript.")
+    st.download_button("Download original PDF", paper_path(paper["file"]).read_bytes(),
+                       file_name=paper["file"], mime="application/pdf", key="paper_dialog_download")
+
+
 def overview():
+    paper = load_paper()
+    highlights = paper["highlights"]
     left, right = st.columns([1, 1.28], gap="large")
     with left:
-        st.html('<div class="eyebrow">Academic research / CT imaging</div>'
-                '<h1 class="overview-title">Lung Cancer<br><span>Detection Study</span></h1>'
-                '<div class="overview-slogan">Detect early. Give tomorrow a chance.</div>'
-                '<div class="hero-copy">This academic research study mainly uses <strong>LUNA16</strong> '
-                'to explore pulmonary nodule detection, classification and segmentation.</div>'
-                '<div class="overview-dataset">LUNA16 brings together <strong>888 3D chest CT scans</strong> '
-                'from the LIDC-IDRI database, with nodule annotations for detection research. '
-                '<strong>Approximately 90 GB</strong> in this study’s dataset collection.</div>')
-        st.link_button("Explore the LUNA16 dataset ↗", "https://luna16.grand-challenge.org/Home/", type="primary")
-        st.caption("Approximate study collection size; download size varies with packaging.")
+        st.html('<div class="eyebrow">PulmoTrack / Academic research</div>'
+                '<h1 class="overview-title showcase-title">Deep learning for<br><span>pulmonary nodules.</span></h1>'
+                '<div class="hero-copy showcase-intro">Exploring detection, classification and independent '
+                '3D segmentation on <strong>LUNA16 chest CT scans</strong>.</div>'
+                '<div class="showcase-author">Farah Sayari <span>·</span> Software Engineering &amp; Data Science</div>')
+        st.link_button("Explore LUNA16 ↗", "https://luna16.grand-challenge.org/Home/", type="primary")
+        st.caption("888 volumetric CT scans from LIDC-IDRI, with pulmonary nodule annotations.")
     with right:
         with st.container(border=True):
-            st.html('<div class="viewer-label"><strong>CT / MULTIPLANAR VIEWS</strong><span>LUNA16 collection</span></div>')
+            st.html('<div class="viewer-label"><strong>CT / MULTIPLANAR VIEWS</strong><span>Concept illustration</span></div>')
             st.image(str(ROOT / "assets/overview/CT Multiplanar Views Dashboard.png"), width=1401)
-            st.caption("Axial · Coronal · Sagittal | CT overview illustration")
+            st.caption("Axial · Coronal · Sagittal")
+
+    st.html('<div class="showcase-section"><div class="eyebrow">LUNA16 / Paper-reported summary</div><h2>Research highlights</h2></div>')
+    for column, (label, value, detail) in zip(st.columns(4), [
+        ("3D CT scans", f'{highlights["ct_scans"]:,}', "LUNA16 research dataset"),
+        ("Segmentation Dice", f'{highlights["segmentation_dice"]:.2f}', "3D nodule segmentation"),
+        ("Detection sensitivity", f'{highlights["detection_sensitivity"]:.0%}', f'At {highlights["false_positives_per_scan"]:g} false positives per scan'),
+        ("Classification AUC", f'{highlights["classification_auc"]:.2f}', "LUNA16 classification summary"),
+    ]):
+        with column:
+            st.html(f'<div class="showcase-highlight"><div class="stat-label">{html.escape(label)}</div>'
+                    f'<div class="showcase-highlight-value">{value}</div><div class="stat-detail">{html.escape(detail)}</div></div>')
+    st.caption("Reported in the project manuscript, pp. 4–5. Detailed DSO pages retain the separate, archived notebook evaluations.")
+
     with st.container(border=True):
-        st.subheader("Why early detection matters")
-        st.write("Lung cancer is the leading cause of cancer-related deaths worldwide and is often diagnosed at an advanced stage. Detecting it earlier can improve treatment options and patients’ chances of survival. This academic research study explores CT-based methods in support of that goal.")
-        st.caption("Medical context: [World Health Organization — Lung cancer](https://www.who.int/news-room/fact-sheets/detail/lung-cancer).")
-    for column, args in zip(st.columns(4), [
-        ("Research objectives", "03", "Detection · Classification · Segmentation"),
-        ("Main model studies", "08", "Earlier pilot studies are shown separately"),
+        context_title, context_copy = st.columns([1, 2.1], gap="large")
+        with context_title:
+            st.html('<div class="eyebrow">The research motivation</div>')
+            st.subheader("Why early detection matters")
+        with context_copy:
+            st.write("Lung cancer is the leading cause of cancer-related death worldwide and is often diagnosed at an advanced stage. Earlier diagnosis can expand treatment options and improve the chance of successful treatment.")
+            st.caption("[Scientific context · World Health Organization](https://www.who.int/news-room/fact-sheets/detail/lung-cancer)")
+
+    st.html('<div class="showcase-section"><div class="eyebrow">Three objectives / Distinct questions</div><h2>Explore the study</h2></div>')
+    objective_cards = [
+        dict(id="dso1", label="DSO1 / Candidate screening", title="Nodule Detection", image="detection.png",
+             caption="Detection concept illustration", description="Assess whether a CT candidate patch contains a nodule, and inspect the trade-off between missed findings and false positives.", action="Explore detection"),
+        dict(id="dso2", label="DSO2 / Classification models", title="Nodule Classification", image="classification.png",
+             caption="Classification concept · illustrative score", description="Study 3D CNN, residual and U-Net encoders. The archived notebooks evaluate true-nodule versus false-nodule classification.", action="Explore classification"),
+        dict(id="dso5", label="DSO5 / Independent challenge", title="Exploratory 3D Segmentation", image="segmentation.png",
+             caption="Segmentation concept illustration", description="Explore voxel-level nodule delineation with 3D U-Net variants, with particular attention to the limitations of tiny-nodule segmentation.", action="Explore segmentation"),
+    ]
+    for column, card in zip(st.columns(3, gap="medium"), objective_cards):
+        with column:
+            with st.container(border=True, key="objective_card_" + card["id"]):
+                st.image(str(ROOT / "assets/overview" / card["image"]), width=1448)
+                st.caption(card["caption"])
+                st.html(f'<div class="eyebrow">{card["label"]}</div><h3 class="showcase-objective-title">{card["title"]}</h3>'
+                        f'<p class="showcase-objective-copy">{card["description"]}</p>')
+                st.button(card["action"] + " →", key="open_" + card["id"],
+                          on_click=navigate, args=(VIEWS[card["id"]],), width="stretch")
+    st.caption("Segmentation is an independent research challenge. Detection and classification do not depend on the learned segmentation models.")
+
+    st.html('<div class="showcase-section"><div class="eyebrow">An iterative research process</div><h2>CRISP-DM methodology</h2></div>')
+    st.write("The work is presented through six connected stages, from problem framing to communicating the findings.")
+    phases = [
+        ("01", "Business understanding", "Define the nodule-analysis objectives and the questions each task should answer."),
+        ("02", "Data understanding", "Inspect CT volumes, annotation structure and class imbalance in LUNA16."),
+        ("03", "Data preparation", "Resample volumes, normalize intensities and construct candidate patches and references."),
+        ("04", "Modeling", "Explore task-specific 3D CNN, residual and U-Net architectures."),
+        ("05", "Evaluation", "Examine overlap scores, ROC curves, confusion matrices and study limitations."),
+        ("06", "Deployment & communication", "Share the research through a team manuscript and this interactive showcase."),
+    ]
+    for start in [0, 3]:
+        for column, (number, heading, copy) in zip(st.columns(3), phases[start:start + 3]):
+            with column:
+                st.html(f'<div class="showcase-process-card"><div class="eyebrow">{number}</div><h3>{heading}</h3><p>{copy}</p></div>')
+    st.caption("[CRISP-DM framework · IBM](https://www.ibm.com/docs/en/spss-modeler/18.6.0?topic=dm-crisp-help-overview)")
+
+    st.html('<div class="showcase-section"><div class="eyebrow">Farah Sayari / LUNA16 workstream</div><h2>My Contribution</h2></div>')
+    contributions = [
+        ("CT preprocessing", "Prepared LUNA16 volumes through resampling, HU normalization, annotation matching and 3D patch extraction."),
+        ("Nodule detection", "Explored candidate-screening models and examined detection results, false positives and model behavior."),
+        ("Nodule classification", "Compared 3D classification architectures and reviewed their recorded training and evaluation results."),
+        ("Exploratory segmentation", "Investigated 3D U-Net variants, augmentation and tiny-nodule oversampling as a separate scientific challenge."),
+    ]
+    for start in [0, 2]:
+        for column, (heading, copy) in zip(st.columns(2), contributions[start:start + 2]):
+            with column:
+                st.html(f'<div class="showcase-contribution"><h3>{heading}</h3><p>{copy}</p></div>')
+
+    st.html('<div class="showcase-section"><div class="eyebrow">The team manuscript / May 2025</div><h2>Research Paper</h2></div>')
+    with st.container(border=True):
+        paper_text, paper_actions = st.columns([2.2, 1], gap="large")
+        with paper_text:
+            st.markdown("**" + paper["title"] + "**")
+            st.write("The team manuscript covers the wider CT and chest X-ray project. This portfolio focuses on my LUNA16 CT workstream.")
+            st.caption(f'{len(paper["pages"])} pages · Farah Sayari and co-authors · Project research manuscript')
+        with paper_actions:
+            if st.button("View PDF", type="primary", width="stretch", key="view_paper"):
+                view_research_paper()
+            st.download_button("Download PDF", paper_path(paper["file"]).read_bytes(), file_name=paper["file"],
+                               mime="application/pdf", width="stretch", key="paper_download")
+
+    st.html('<div class="showcase-section"><div class="eyebrow">Inspect the supporting evidence</div><h2>Research Resources</h2></div>')
+    for column, args in zip(st.columns(3), [
+        ("Source notebooks", len(archive["sources"]), "Selected preprocessing and modeling notebooks"),
+        ("Model studies", len(archive["models"]), "Eight main studies and two earlier pilots"),
         ("Original figures", len(archive["figures"]), "Plus a 48-frame Grad-CAM animation"),
-        ("Source notebooks", len(archive["sources"]), "Selected after the presentation audit"),
     ]):
         with column:
             stat(*args)
-    st.subheader("Explore the three objectives")
-    objective_images = {"dso1": "detection.png", "dso2": "classification.png", "dso5": "segmentation.png"}
-    for column, dso in zip(st.columns(3, gap="medium"), archive["dsos"]):
-        with column:
-            with st.container(border=True):
-                st.image(str(ROOT / "assets/overview" / objective_images[dso["id"]]), width=1448)
-                st.html(f'<div class="eyebrow">DSO {dso["number"]} / {html.escape(dso["role"])}</div>')
-                st.subheader(dso["name"])
-                st.write(dso["description"])
-                st.button("Open " + dso["name"].lower() + " →", key="open_" + dso["id"],
-                          on_click=navigate, args=(VIEWS[dso["id"]],), width="stretch")
-    st.caption("Overview images illustrate the objectives; their highlighted findings and example scores are not measured study results.")
-    st.caption("Detection and classification are the main objectives. Segmentation is a separate research challenge, not a prerequisite model for either stage.")
+    gallery_action, sources_action = st.columns(2)
+    with gallery_action:
+        st.button("Browse the CT gallery →", on_click=navigate, args=("CT gallery",), width="stretch")
+    with sources_action:
+        st.button("Explore models & sources →", on_click=navigate, args=("Models & sources",), width="stretch")
 
 
 def binary_results(model_id, key):
