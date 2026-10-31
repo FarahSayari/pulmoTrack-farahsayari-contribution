@@ -299,7 +299,7 @@ with st.sidebar:
     st.caption("COLLECTION")
     st.markdown("**LUNA16 · Pulmonary nodules**")
     st.caption("3D CT patches / segmentation research")
-    st.html('<div class="sidebar-note">Built from saved notebook outputs.<br>No dataset or model execution needed.<br><br>'
+    st.html('<div class="sidebar-note">'
             '<strong>Farah Sayari</strong><br>pulmoTrack-farahsayari contribution</div>')
 
 st.html('<div class="topline"><div class="eyebrow">Lung imaging / research workspace</div>'
