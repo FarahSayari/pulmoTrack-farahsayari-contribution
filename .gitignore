@@ -8,3 +8,5 @@ venv/
 !.env.example
 .DS_Store
 Thumbs.db
+.pytest_cache/
+.streamlit/secrets.toml

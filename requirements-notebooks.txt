@@ -1,0 +1,10 @@
+# Optional: only needed to run the original research notebooks.
+-r requirements.txt
+numpy
+matplotlib
+seaborn
+SimpleITK
+torch
+scipy
+scikit-learn
+tqdm
