@@ -394,7 +394,6 @@ def detection():
 def classification():
     st.image(str(ROOT / "assets/DSO2/Nodule Classification.png"), width=1460)
     st.caption("Classification concept · diagnostic label and confidence are illustrative.")
-    st.info(dsos["dso2"]["scope"])
     st.subheader("Model overview")
     options = [m["id"] for m in archive["models"] if m["dso"] == "dso2"]
     model = st.selectbox("Classification model", options, format_func=lambda value: models[value]["name"], key="classification_model")
@@ -623,12 +622,12 @@ def sources_and_models():
         st.download_button("Download all results CSV", evidence_csv(archive), file_name="pulmotrack_all_results.csv", mime="text/csv")
         st.download_button("Download archive manifest", json.dumps(archive, indent=2).encode(), file_name="pulmotrack_archive_manifest.json", mime="application/json")
     with context_tab:
-        st.write("**Three distinct objectives.** Detection and classification are the main studies. Nodule segmentation is an independent research exploration; historical lung-mask generation examples are a separate preprocessing topic.")
-        st.write("**Cohorts and checkpoints.** Best-checkpoint matrices and AUCs are kept together. Last-epoch accuracy appears in training history. Studies use different splits and sample populations, so the interface does not rank them.")
-        st.write("**Scope of classification.** All evaluated classification models have two output classes. They do not evaluate normal/benign/malignant diagnosis.")
-        st.write("**Provided lung masks.** Later use of the provided LUNA16 masks is the intended direction. The supplied later notebooks do not establish that integration; their generated-mask examples are labeled historical.")
-        st.write("**Original evidence.** PNGs and the GIF are copied unchanged. Training curves use printed log values. Matrix-derived accuracies are arithmetic from transcribed saved figures, linked to their checksums.")
-        st.write("**Presentation gaps.** Missing detection ResNet/U-Net runs and different classification CNN/U-Net runs are not silently replaced with slide metrics. The matching notebook experiments are shown with their actual identities.")
+        st.write("**Study objectives.** DSO1 screens nodule candidates, DSO2 studies binary classification, and DSO5 explores nodule segmentation as an independent challenge.")
+        st.write("**Reading the scores.** Each result belongs to the model, checkpoint and sample shown. Studies use different samples and scoring rules, so their scores are not a direct ranking.")
+        st.write("**Classification labels.** The saved classification evaluations distinguish true nodules from false nodules.")
+        st.write("**Segmentation masks.** The experiments use spherical nodule reference masks. Future stages are intended to use the original LUNA16 lung masks, which cover the lung region rather than individual nodules.")
+        st.write("**Result sources.** Overview highlights come from the project manuscript. Detailed model pages use their saved notebook evaluations, without rerunning the models.")
+        st.write("**Figures and illustrations.** Original experiment figures are available for download. Header images are concept illustrations; their labels and scores are not individual model predictions.")
 
 
 with st.sidebar:
