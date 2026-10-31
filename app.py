@@ -12,6 +12,7 @@ import streamlit as st
 from PIL import Image
 
 from pulmotrack.archive import ROOT, evidence_csv, figure_path, load_archive, source_label
+from pulmotrack.detection import confusion_chart, outcome_summary, roc_display
 from pulmotrack.paper import load_paper, paper_path
 
 st.set_page_config(page_title="pulmoTrack | CT Research Workspace", page_icon="🫁", layout="wide")
@@ -90,8 +91,7 @@ def overview():
         st.html('<div class="eyebrow">PulmoTrack / Academic research</div>'
                 '<h1 class="overview-title showcase-title">Deep learning for<br><span>pulmonary nodules.</span></h1>'
                 '<div class="hero-copy showcase-intro">Exploring detection, classification and independent '
-                '3D segmentation on <strong>LUNA16 chest CT scans</strong>.</div>'
-                '<div class="showcase-author">Farah Sayari <span>·</span> Software Engineering &amp; Data Science</div>')
+                '3D segmentation on <strong>LUNA16 chest CT scans</strong>.</div>')
         st.link_button("Explore LUNA16 ↗", "https://luna16.grand-challenge.org/Home/", type="primary")
         st.caption("888 volumetric CT scans from LIDC-IDRI, with pulmonary nodule annotations.")
     with right:
@@ -110,7 +110,6 @@ def overview():
         with column:
             st.html(f'<div class="showcase-highlight"><div class="stat-label">{html.escape(label)}</div>'
                     f'<div class="showcase-highlight-value">{value}</div><div class="stat-detail">{html.escape(detail)}</div></div>')
-    st.caption("Reported in the project manuscript, pp. 4–5. Detailed DSO pages retain the separate, archived notebook evaluations.")
 
     with st.container(border=True):
         context_title, context_copy = st.columns([1, 2.1], gap="large")
@@ -227,6 +226,67 @@ def binary_results(model_id, key):
                        file_name=record["dso"] + "_recorded_results.csv", mime="text/csv", key=key + "_csv")
 
 
+def detection_results():
+    st.subheader("Evaluation results")
+    st.write("The best checkpoint is selected by validation loss, then evaluated on a separate test split. Choose a cohort to inspect its recorded results.")
+    selected = st.radio("Evaluation cohort", ["det_test", "det_validation"], horizontal=True,
+                        format_func=lambda value: experiments[value]["stage"].title() + " · best checkpoint",
+                        key="detection_evaluation")
+    record = experiments[selected]
+    outcome = outcome_summary(record["matrix"])
+    with st.container(key="detection_metrics"):
+        for column, (label, value, detail) in zip(st.columns(3), [
+            (record["stage"].title() + " accuracy", f'{record["metrics"]["accuracy"]:.2%}', "Correct predictions / evaluated patches"),
+            ("ROC-AUC", f'{record["metrics"]["roc_auc"]:.4f}', "Recorded discrimination across thresholds"),
+            ("Evaluated patches", f'{record["sample_count"]:,}', f'{outcome["tn"] + outcome["fp"]:,} non-nodules · {outcome["tp"] + outcome["fn"]:,} nodules'),
+        ]):
+            with column:
+                stat(label, value, detail)
+    matrix_column, roc_column = st.columns(2, gap="large")
+    with matrix_column:
+        with st.container(border=True, key="detection_matrix"):
+            st.subheader("Confusion matrix")
+            st.caption("Counts at the notebook’s argmax decision rule.")
+            st.plotly_chart(confusion_chart(record["matrix"]), use_container_width=True, key="detection_confusion")
+        source(figures[record["matrix_figure_id"]])
+    with roc_column:
+        roc = figures[record["roc_figure_id"]]
+        with st.container(border=True, key="detection_roc"):
+            st.subheader("ROC curve")
+            st.caption("Sensitivity versus false positive rate across thresholds.")
+            st.image(roc_display(figure_path(roc).read_bytes(), roc["width"], roc["height"],
+                                 record["stage"].title() + " ROC curve from the original experiment"), width=roc["width"])
+        source(roc)
+    st.caption("The matrix uses the original counts. ROC display colors are adapted from the original PNG; its curve is unchanged. The AUC card retains four decimal places rather than the plot legend’s rounding.")
+    st.subheader("Results interpretation")
+    interpretation, errors = st.columns([1.15, 1], gap="large")
+    with interpretation:
+        st.markdown(f'**{outcome["tp"]:,} of {outcome["tp"] + outcome["fn"]:,} nodule patches were identified** '
+                    f'({outcome["sensitivity"]:.2%} sensitivity). Of all patches predicted as nodules, '
+                    f'**{outcome["precision"]:.2%} were true nodules** (precision).')
+        st.write("The high ROC-AUC indicates strong separation between the two patch classes in this cohort. Accuracy includes the larger non-nodule class; sensitivity and the error counts provide complementary context.")
+    with errors:
+        st.html(f'<div class="detection-errors"><div><strong>{outcome["fp"]:,} false positives</strong>'
+                '<p>Non-nodule patches predicted as nodules: extra candidates to review.</p></div>'
+                f'<div><strong>{outcome["fn"]:,} false negatives</strong>'
+                '<p>Nodule patches predicted as non-nodules: missed candidates in this cohort.</p></div></div>')
+    st.caption("These are candidate-level results, not full-scan sensitivity or false positives per scan. The notebook splits patches randomly; it does not establish a patient-disjoint evaluation or clinical performance.")
+    with st.expander("Evaluation context & original figures"):
+        st.write(record["note"])
+        if "last_epoch_accuracy" in record:
+            st.caption(f'Last-epoch validation accuracy: {record["last_epoch_accuracy"]:.2%}. The best-checkpoint matrix above gives {record["metrics"]["accuracy"]:.2%}.')
+        st.write("Raw probability arrays were not preserved, so the ROC is displayed from its saved experimental figure rather than reconstructed.")
+        source(record)
+        for column, field, label in zip(st.columns(2), ["matrix_figure_id", "roc_figure_id"],
+                                        ["Download original matrix", "Download original ROC"]):
+            original = figures[record[field]]
+            with column:
+                st.download_button(label, figure_path(original).read_bytes(), file_name=original["file"],
+                                   mime="image/png", key="detection_original_" + field)
+    st.download_button("Download DSO results CSV", evidence_csv(archive, "dso1"),
+                       file_name="dso1_recorded_results.csv", mime="text/csv", key="detection_csv")
+
+
 def training_panel(runs, key):
     by_id = {run["id"]: run for run in runs}
     selected = st.selectbox("Training experiment", list(by_id), format_func=lambda value: by_id[value]["label"], key=key + "_run")
@@ -302,17 +362,42 @@ def gradcam_panel():
 
 
 def detection():
-    title("DSO1 / Main objective", "Nodule detection", "Candidate screening on 3D CT patches. Review the recorded U-Net encoder study, its evaluations and the earlier explainability work.")
-    results_tab, training_tab, cam_tab, prep_tab = st.tabs(["Results", "Training history", "Grad-CAM & pilot studies", "Preparation & scope"])
+    title("DSO1 / Pulmonary nodule analysis", "Nodule detection",
+          "Identify likely pulmonary nodules among supplied LUNA16 candidates using a deep learning model that examines 3D CT patches. This study evaluates candidate screening, with separate validation and test results.")
+    st.subheader("Model overview")
+    cards = [
+        ("Architecture", "3D U-Net encoder", "Double-convolution blocks with batch normalization and ReLU; 32 → 64 → 128 → 256 channels."),
+        ("Dataset", "LUNA16 candidates", "9,215 extracted patches: 1,215 nodule and 8,000 non-nodule examples. Preparation covers 888 CT scans."),
+        ("Input & output", "64 × 64 × 64 voxels", "One-channel, candidate-centered CT patch → two class scores: non-nodule or nodule."),
+    ]
+    for column, (label, heading, description) in zip(st.columns(3, gap="medium"), cards):
+        with column:
+            st.html(f'<div class="detection-model-card"><div class="eyebrow">{label}</div>'
+                    f'<h3>{heading}</h3><p>{description}</p></div>')
+    st.html('<div class="detection-flow" aria-label="Detection architecture">'
+            '<span>3D CT patch</span><i>→</i><span>Convolution &amp; pooling</span><i>→</i>'
+            '<span>Global average pooling</span><i>→</i><span>Two-class head</span></div>')
+    st.caption("The encoder learns volumetric features; a linear head produces class logits, with softmax scores used for ROC evaluation. It has no segmentation decoder or bounding-box output. Segmentation is a separate research challenge.")
+    source(dict(notebook="11_nodule_detection.ipynb", cell=5))
+    results_tab, training_tab, cam_tab, prep_tab = st.tabs(["Results", "Training history", "Prediction example & Grad-CAM", "Preparation & scope"])
     with results_tab:
-        binary_results("det_unet", "detection")
+        detection_results()
     with training_tab:
+        st.subheader("Learning from 3D candidate patches")
+        st.write("Weighted focal loss (γ = 2) addresses the unequal class frequencies. The run uses Adam at a learning rate of 0.0001, batch size 16, and 20 recorded epochs; checkpoints are selected by the lowest validation loss.")
+        st.caption("Training: 6,451 patches · Validation: 1,843 · Test: 921. The best saved validation checkpoint corresponds to epoch 15; last-epoch values describe epoch 20.")
         training_panel([r for r in archive["training"] if r["model"] == "det_unet"], "detection")
     with cam_tab:
+        st.subheader("A preserved pilot prediction")
+        st.write("The main U-Net study retains aggregate evaluations, but no per-case prediction images or probability arrays. The earlier Simple 3D CNN pilot does preserve the CT slice and Grad-CAM prediction example below.")
+        show_figure(figures["pilot_cnn_24_01"], download=True)
+        st.caption("Original pilot notebook output. Its title records the predicted label; no ground-truth label or confidence score is displayed, so this example cannot establish whether the prediction was correct.")
         gradcam_panel()
     with prep_tab:
+        st.subheader("From CT scans to candidate patches")
+        st.write("The preparation notebooks resample CT volumes, match supplied candidate coordinates to nodule annotations, and extract labeled 3D patches. The selected dataset contains all 1,215 positive candidates and a subset of 8,000 negative candidates from the larger 754,975-candidate collection.")
         st.info(dsos["dso1"]["scope"])
-        st.write("The selected preparation run uses 888 CT scans, 754,975 candidates, then 1,215 positive and 8,000 negative patches. Supplied code splits the patches 70% / 20% / 10% for training, validation and testing.")
+        st.caption("The notebook uses a seeded random patch split of approximately 70% / 20% / 10%. Preparation images show annotations and historical preprocessing, rather than predictions from the main detection model.")
         preparation_panel()
 
 
