@@ -127,7 +127,7 @@ def overview():
              caption="Detection concept illustration", description="Assess whether a CT candidate patch contains a nodule, and inspect the trade-off between missed findings and false positives.", action="Explore detection"),
         dict(id="dso2", label="DSO2 / Classification models", title="Nodule Classification", image="classification.png",
              caption="Classification concept · illustrative score", description="Study 3D CNN, residual and U-Net encoders. The archived notebooks evaluate true-nodule versus false-nodule classification.", action="Explore classification"),
-        dict(id="dso5", label="DSO5 / Independent challenge", title="Exploratory 3D Segmentation", image="segmentation.png",
+        dict(id="dso5", label="DSO3 / Independent challenge", title="Exploratory 3D Segmentation", image="segmentation.png",
              caption="Segmentation concept illustration", description="Explore voxel-level nodule delineation with 3D U-Net variants, with particular attention to the limitations of tiny-nodule segmentation.", action="Explore segmentation"),
     ]
     for column, card in zip(st.columns(3, gap="medium"), objective_cards):
@@ -632,7 +632,9 @@ def sources_and_models():
 
 with st.sidebar:
     st.html('<div class="brand"><span class="brand-mark" aria-hidden="true">+</span><div class="brand-name">pulmo<span>Track</span></div></div><div class="brand-sub">CT imaging · research workspace</div>')
-    view = st.radio("Workspace", ["Overview", *VIEWS.values(), "CT gallery", "Models & sources"], key="navigation")
+    view = st.radio("Workspace", ["Overview", *VIEWS.values(), "CT gallery", "Models & sources"],
+                    format_func=lambda label: "DSO3 · Segmentation" if label == VIEWS["dso5"] else label,
+                    key="navigation")
     st.divider()
     st.caption("COLLECTION")
     st.markdown("**LUNA16 · Pulmonary nodules**")
