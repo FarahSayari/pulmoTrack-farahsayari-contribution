@@ -10,6 +10,10 @@ The app uses existing evidence: **123 original PNG figures, one 48-frame Grad-CA
 
 ![pulmoTrack interface](docs/preview.png)
 
+[Live research website](https://pulmotrack-farahsayari-contribution-sef2wgqdo5bzl9wmgfwxry.streamlit.app/) · [Portfolio project details (PDF)](docs/PulmoTrack_Portfolio_Project_Details.pdf) · [Editable portfolio text](docs/PulmoTrack_Portfolio_Project_Details.md)
+
+The seven-page portfolio document covers the project information, technologies, contributions, LUNA16, all six CRISP-DM phases, three objectives, results, deployment and research manuscript. Rebuild it with `python -m pip install -r requirements-docs.txt` followed by `python scripts/build_portfolio_pdf.py`; this optional tooling is separate from the hosted app's dependencies.
+
 ## Launch
 
 ```powershell
