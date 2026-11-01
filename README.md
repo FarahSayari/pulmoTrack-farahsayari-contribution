@@ -4,7 +4,7 @@ An academic medical-imaging research project by **Farah Sayari**, exploring deep
 
 **Role:** Data Scientist, Project Manager · **Methodology:** CRISP-DM · **Status:** Completed
 
-[Live website](https://pulmotrack-farahsayari-contribution-sef2wgqdo5bzl9wmgfwxry.streamlit.app/) · [Portfolio PDF](docs/PulmoTrack_Portfolio_Project_Details.pdf) · [Portfolio plots ZIP](docs/PulmoTrack_Portfolio_Plots.zip) · [Research manuscript](assets/paper/PulmoTrackPaper.pdf)
+[Live website](https://pulmotrack-farahsayari-contribution-sef2wgqdo5bzl9wmgfwxry.streamlit.app/) · [Research manuscript](assets/paper/PulmoTrackPaper.pdf)
 
 ## Research objectives
 
