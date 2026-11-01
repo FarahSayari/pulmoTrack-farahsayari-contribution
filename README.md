@@ -1,18 +1,67 @@
-# pulmoTrack-farahsayari contribution
+# PulmoTrack — Deep Learning for Pulmonary Nodule Analysis
 
-A Streamlit CT research workspace by **Farah Sayari**, covering three distinct objectives on LUNA16:
+An academic medical-imaging research project by **Farah Sayari**, exploring deep learning for pulmonary nodule analysis on **LUNA16 chest CT scans**. The completed Streamlit showcase brings together preprocessing, model studies, recorded evaluations and original research figures.
+
+**Role:** Data Scientist, Project Manager · **Methodology:** CRISP-DM · **Status:** Completed
+
+[Live website](https://pulmotrack-farahsayari-contribution-sef2wgqdo5bzl9wmgfwxry.streamlit.app/) · [Portfolio PDF](docs/PulmoTrack_Portfolio_Project_Details.pdf) · [Portfolio plots ZIP](docs/PulmoTrack_Portfolio_Plots.zip) · [Research manuscript](assets/paper/PulmoTrackPaper.pdf)
+
+## Research objectives
 
 - **DSO1 — Nodule detection:** candidate screening using 3D CT patches.
 - **DSO2 — Nodule classification:** recorded binary true-nodule / false-nodule experiments.
-- **DSO5 — Exploratory nodule segmentation:** an independent model-development challenge.
+- **DSO3 — Exploratory nodule segmentation:** an independent model-development challenge.
+
+Segmentation is presented as **DSO3** in the portfolio overview and sidebar. The original research material, archive identifiers and segmentation assets retain the historical **DSO5** name. Detection and classification do not depend on the learned segmentation masks.
 
 The app uses existing evidence: **123 original PNG figures, one 48-frame Grad-CAM GIF, 15 evaluations and 261 logged epochs**, selected from **12 notebooks**. It requires no CT dataset, model execution or PyTorch installation.
 
 ![pulmoTrack interface](docs/preview.png)
 
-[Live research website](https://pulmotrack-farahsayari-contribution-sef2wgqdo5bzl9wmgfwxry.streamlit.app/) · [Portfolio project details (PDF)](docs/PulmoTrack_Portfolio_Project_Details.pdf) · [Editable portfolio text](docs/PulmoTrack_Portfolio_Project_Details.md)
+## My contribution
 
-The seven-page portfolio document covers the project information, technologies, contributions, LUNA16, all six CRISP-DM phases, three objectives, results, deployment and research manuscript. Rebuild it with `python -m pip install -r requirements-docs.txt` followed by `python scripts/build_portfolio_pdf.py`; this optional tooling is separate from the hosted app's dependencies.
+- Organized the CT research work around CRISP-DM and documented the scope of the three objectives.
+- Worked on LUNA16 resampling, coordinate conversion, normalization, candidate matching and 3D patch preparation.
+- Developed and studied detection, binary classification and exploratory segmentation approaches, including attention, residual and tiny-nodule experiments.
+- Reviewed saved model outputs, evaluation cohorts and training histories, and contributed to the team manuscript.
+- Created and deployed the Streamlit research showcase and prepared the portfolio documentation and plot collection.
+
+## Technologies
+
+| Area | Tools |
+| --- | --- |
+| Research and modeling | Python, PyTorch, torchvision, NumPy, scikit-learn |
+| Medical-image processing | SimpleITK, SciPy |
+| Data analysis and visualization | pandas, Matplotlib, Plotly, Pillow |
+| Research environment | Jupyter Notebook, Google Colab |
+| Interface and delivery | Streamlit, Git, GitHub, Streamlit Community Cloud |
+
+The hosted interface uses only Streamlit, pandas, Plotly and Pillow, plus Python's standard library. Research dependencies such as PyTorch and SimpleITK are optional and are needed only to execute the original notebooks with their external datasets.
+
+## CRISP-DM workflow
+
+| Phase | Work completed |
+| --- | --- |
+| Business understanding | Defined candidate detection, binary classification and independent nodule-segmentation objectives. |
+| Data understanding | Inspected CT volumes, voxel spacing, annotations, candidate labels, nodule sizes and class imbalance. |
+| Data processing | Resampled volumes, converted coordinates, normalized intensities and prepared labeled patches and spherical nodule references. |
+| Modeling | Studied 3D encoder classifiers, CNN and residual classification models, and U-Net segmentation variants. |
+| Evaluation | Reviewed recorded confusion matrices, ROC-AUC, segmentation metrics, original predictions and training logs. |
+| Deployment | Published the saved research results in a Streamlit Community Cloud application. |
+
+## Portfolio documentation and plots
+
+| Resource | Contents |
+| --- | --- |
+| [Project details PDF](docs/PulmoTrack_Portfolio_Project_Details.pdf) | Seven pages covering the project information, technologies, contributions, LUNA16, methodology, objectives, results, deployment and research paper. |
+| [Editable portfolio text](docs/PulmoTrack_Portfolio_Project_Details.md) | Text version for adapting the project detail page. |
+| [Selected plots and captions](docs/portfolio_plots/README.md) | Ordered figures, suggested page placement, ready-to-use captions and scientific context. |
+| [Download all portfolio plots](docs/PulmoTrack_Portfolio_Plots.zip) | The complete selection in a ZIP archive. |
+| [Plot provenance manifest](docs/portfolio_plots/selection_manifest.json) | Source notebooks, cell numbers, original-image checksums and the data used for the descriptive chart. |
+
+The plot collection includes **nine unchanged notebook figures**: CT preprocessing, DSO1 and DSO2 test confusion matrices and ROC curves, a segmentation prediction example, and three training histories. An optional illustrative CT hero and a class-distribution chart are also included. The distribution chart uses the recorded patch counts and is available as PNG and SVG.
+
+Recommended layout: preprocessing → DSO1 evaluation pair → DSO2 evaluation pair → DSO3 prediction example → training histories. The segmentation example has its own case Dice of **0.2556**; it is separate from the **0.9504** mixed-validation result.
 
 ## Launch
 
@@ -41,7 +90,7 @@ The root `requirements.txt` installs the runtime dependencies. No secrets, datas
 - **Overview:** a research showcase with paper-reported LUNA16 highlights, the three objectives, a CRISP-DM presentation of the workflow, personal contributions and Research Resources.
 - **DSO1 · Detection:** an illustrated introduction, model architecture, best-checkpoint validation and test evaluations, error interpretation, training history and candidate preparation. Pilot Grad-CAM animation and frame inspection are presented separately from the main study.
 - **DSO2 · Classification:** an illustrated introduction and model overview for Improved 3D CNN, ResNet3D Lite and U-Net encoder studies. Each model retains its own cohort, themed evaluation charts, error interpretation and training history.
-- **DSO5 · Segmentation:** an illustrated independent research challenge with model overviews, themed metric summaries, cohort-specific interpretation, original prediction examples and training curves. Unavailable scores remain missing; no ROC or confusion matrix is synthesized.
+- **DSO3 · Segmentation:** an illustrated independent research challenge with model overviews, themed metric summaries, cohort-specific interpretation, original prediction examples and training curves. The source archive uses DSO5. Unavailable scores remain missing; no ROC or confusion matrix is synthesized.
 - **CT gallery:** filter original images by objective, study scope and content; download the original PNGs.
 - **Models & sources:** ten documented model studies, selected source notebooks, provenance and CSV/JSON downloads. Four segmentation checkpoints are included; other studies are documented by their outputs.
 
@@ -57,8 +106,8 @@ The overview's 0.95 segmentation Dice, 92% sensitivity at 1.5 false positives pe
 | --- | --- | --- |
 | DSO1 | [11_nodule_detection.ipynb](notebooks/11_nodule_detection.ipynb) | Completed 20-epoch U-Net encoder classifier study, validation and test evaluation |
 | DSO2 | [11_nodule_classification.ipynb](notebooks/11_nodule_classification.ipynb) | Three binary classification studies |
-| DSO5 | [02_Modeling_Segmentation.ipynb](notebooks/02_Modeling_Segmentation.ipynb) | Segmentation architectures, recorded evaluations and examples |
-| DSO5 preparation | [01_luna16_Data Acquisition.ipynb](notebooks/01_luna16_Data%20Acquisition.ipynb) | CT preparation and spherical reference masks |
+| DSO3 (archived as DSO5) | [02_Modeling_Segmentation.ipynb](notebooks/02_Modeling_Segmentation.ipynb) | Segmentation architectures, recorded evaluations and examples |
+| Segmentation preparation | [01_luna16_Data Acquisition.ipynb](notebooks/01_luna16_Data%20Acquisition.ipynb) | CT preparation and spherical reference masks |
 
 Supporting sources are explicitly listed in `scripts/archive_catalog.py`: the verified 888-scan resampling run, historical lung-mask examples, candidate preparation, 1,215-positive/8,000-negative patch extraction, pilot balancing/splitting and two earlier training notebooks. Incomplete drafts and the Markdown document named `11_nodule_classification_updated.ipynb` are excluded from extraction.
 
@@ -103,3 +152,12 @@ python -m pytest -q
 `assets/archive/manifest.json` records objective, study scope, checkpoint/cohort context, source cell numbers, notebook checksums and original figure hashes. All cell references are 1-based. Explicit source selection prevents filename collisions or accidental ingestion of unrelated drafts.
 
 `requirements-notebooks.txt` contains optional research dependencies; they are not required by the interface. The original notebooks also require external data and their historical Colab/Windows/Linux paths to be adapted if someone chooses to run them.
+
+To rebuild the portfolio PDF and editable text:
+
+```powershell
+python -m pip install -r requirements-docs.txt
+python scripts/build_portfolio_pdf.py
+```
+
+The PDF builder reads saved evaluation summaries and existing images. Its optional ReportLab dependency is separate from the hosted app's runtime requirements.
