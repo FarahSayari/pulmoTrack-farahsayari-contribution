@@ -161,3 +161,11 @@ python scripts/build_portfolio_pdf.py
 ```
 
 The PDF builder reads saved evaluation summaries and existing images. Its optional ReportLab dependency is separate from the hosted app's runtime requirements.
+
+## License and credits
+
+The project code is licensed under the [MIT License](LICENSE).
+
+Copyright (c) 2026 **Farah Sayari**.
+
+Existing author credits in the team research manuscript and original notebooks are preserved. Third-party datasets and dependencies retain their respective licenses.
