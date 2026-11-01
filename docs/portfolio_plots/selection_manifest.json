@@ -1,0 +1,121 @@
+{
+  "description": "Portfolio plot selection; original evidence preserved",
+  "files": [
+    {
+      "file": "00_optional_ct_hero_illustration.png",
+      "source": "assets/overview/CT Multiplanar Views Dashboard.png",
+      "kind": "Concept illustration",
+      "caption": "Optional hero image: illustrative multiplanar CT views. Highlighted findings are not model predictions.",
+      "sha256": "e4832beeb28120cbde7d563240b09e7028c9e8c49e3410fb07ae015cd81e75ed"
+    },
+    {
+      "file": "01_ct_preprocessing.png",
+      "figure_id": "resampling_08_01",
+      "notebook": "3_resample_ct_scans (1).ipynb",
+      "cell": 8,
+      "sha256": "2dbc921a7b42a72b0f4206c0fc40b5427c9be3ef4887ca3dc82adbf4dffbc9a6",
+      "kind": "Unmodified original notebook PNG",
+      "caption": "CT before and after resampling to 1 mm isotropic spacing."
+    },
+    {
+      "file": "02_dso1_test_confusion_matrix.png",
+      "figure_id": "detection_08_01",
+      "notebook": "11_nodule_detection.ipynb",
+      "cell": 8,
+      "sha256": "a6fd1e329b64654ed55a13d1515a51d81cc758d5e0e57009a1dc1119d2ac5b76",
+      "kind": "Unmodified original notebook PNG",
+      "caption": "DSO1 candidate screening: best-checkpoint test evaluation, 921 patches; 789 TN, 11 FP, 9 FN and 112 TP."
+    },
+    {
+      "file": "03_dso1_test_roc_curve.png",
+      "figure_id": "detection_08_02",
+      "notebook": "11_nodule_detection.ipynb",
+      "cell": 8,
+      "sha256": "16e2981b24e39947bec9d461ca36b74aad6e817496ff06489936e7d7dc281bac",
+      "kind": "Unmodified original notebook PNG",
+      "caption": "DSO1 candidate screening: test ROC-AUC 0.9961 and accuracy 97.83%. The original plot rounds AUC in its legend."
+    },
+    {
+      "file": "04_dso2_test_confusion_matrix.png",
+      "figure_id": "classification_11_01",
+      "notebook": "11_nodule_classification.ipynb",
+      "cell": 11,
+      "sha256": "5b4392ef20881b43eed0b4e407951312e2e8b7d86b3dc645bda04489e999d20e",
+      "kind": "Unmodified original notebook PNG",
+      "caption": "DSO2 Improved 3D CNN: test evaluation, 201 patches; 43 TN, 35 FP, 16 FN and 107 TP. Labels are true nodule and false nodule."
+    },
+    {
+      "file": "05_dso2_test_roc_curve.png",
+      "figure_id": "classification_11_02",
+      "notebook": "11_nodule_classification.ipynb",
+      "cell": 11,
+      "sha256": "f45633fbbb6add03e220fc884d1d8385bbaedea85e9af1e7dac4f1b27d394950",
+      "kind": "Unmodified original notebook PNG",
+      "caption": "DSO2 Improved 3D CNN: test ROC-AUC 0.8335 and accuracy 74.63%; binary true/false nodule classification."
+    },
+    {
+      "file": "06_dso3_segmentation_prediction.png",
+      "figure_id": "modeling_13_03",
+      "notebook": "02_Modeling_Segmentation.ipynb",
+      "cell": 13,
+      "sha256": "13ff6862e5ee5729ee12710c39cb2d5f1588291e28e9357815b2b77194f4854d",
+      "kind": "Unmodified original notebook PNG",
+      "caption": "DSO3 baseline U-Net: CT slices, spherical reference masks and predicted masks. Individual displayed case Dice: 0.2556. This is from positive-patch experiment A, not the mixed validation cohort."
+    },
+    {
+      "file": "07_dso1_training_history.png",
+      "figure_id": "detection_07_01",
+      "notebook": "11_nodule_detection.ipynb",
+      "cell": 7,
+      "sha256": "959f2c4947780736f86809cfb60cd75ae1435e3f30bc263e8ecfbefa93dc5713",
+      "kind": "Unmodified original notebook PNG",
+      "caption": "DSO1 U-Net encoder: training/validation weighted focal loss and accuracy over 20 recorded epochs. Last-epoch accuracy is separate from the best-checkpoint evaluation."
+    },
+    {
+      "file": "08_dso2_training_history.png",
+      "figure_id": "classification_10_01",
+      "notebook": "11_nodule_classification.ipynb",
+      "cell": 10,
+      "sha256": "ba914bf774e4112aa4b6a51edaad4b6e3ec6b40e569918e75f70f3af5fa37ff6",
+      "kind": "Unmodified original notebook PNG",
+      "caption": "DSO2 Improved 3D CNN: training/validation cross-entropy loss and accuracy over 17 recorded epochs."
+    },
+    {
+      "file": "09_dso3_training_loss.png",
+      "figure_id": "modeling_15_01",
+      "notebook": "02_Modeling_Segmentation.ipynb",
+      "cell": 15,
+      "sha256": "62d3474b8030fc9e1f4fa97ce278f0aa4bbcd12af1b65d29b9a16248058e5c4d",
+      "kind": "Unmodified original notebook PNG",
+      "caption": "DSO3 baseline U-Net: training/validation binary cross-entropy loss over 50 epochs. Historical validation inherits augmentation."
+    },
+    {
+      "file": "10_optional_class_distribution.png",
+      "vector_file": "10_optional_class_distribution.svg",
+      "kind": "Descriptive chart generated from recorded class counts",
+      "data": [
+        {
+          "study": "DSO1 detection",
+          "positive": 1215,
+          "negative": 8000
+        },
+        {
+          "study": "DSO2 classification",
+          "positive": 1243,
+          "negative": 761
+        }
+      ],
+      "sources": [
+        {
+          "notebook": "11_nodule_detection.ipynb",
+          "cell": 3
+        },
+        {
+          "notebook": "11_nodule_classification.ipynb",
+          "cell": 3
+        }
+      ],
+      "caption": "Recorded patch class distributions for two separate study datasets. Counts are patches, not unique nodules, patients or CT scans. Each panel uses its own y-axis scale."
+    }
+  ]
+}
